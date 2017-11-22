@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">3DViewer</string>
+    <string name="descargar03D">Descargar Objeto3D</string>
+    <string name="mis03D">Mis Objetos3D</string>
+    <string name="subir03D">Subir Objetos3D</string>
+    <string name="animados">Animados</string>
+    <string name="no_animados">No animados</string>
+</resources>
