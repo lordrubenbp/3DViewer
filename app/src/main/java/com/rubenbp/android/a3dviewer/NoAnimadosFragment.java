@@ -21,6 +21,8 @@ import java.util.List;
 public class NoAnimadosFragment extends Fragment {
 
 
+    public final String URL="http://192.168.0.104/rest_service/get_all_modelos_noanimados";
+
     private ModeloAdapter mAdapter;
     private class ModeloAsyncTask extends AsyncTask<String, Void, List<Modelo>> {
 
@@ -62,10 +64,10 @@ public class NoAnimadosFragment extends Fragment {
         GridView gridView = (GridView) rootView.findViewById(R.id.gridview);
 
         ModeloAsyncTask task = new ModeloAsyncTask();
-        task.execute("mi_url_aqui");
+        task.execute(URL);
 
         // Create a new adapter that takes an empty list of earthquakes as input
-        mAdapter = new ModeloAdapter(this, new ArrayList<Modelo>());
+        mAdapter = new ModeloAdapter(this.getContext(), new ArrayList<Modelo>());
 
         // Set the adapter on the {@link ListView}
         // so the list can be populated in the user interface

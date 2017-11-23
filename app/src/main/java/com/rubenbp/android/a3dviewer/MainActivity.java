@@ -2,6 +2,7 @@ package com.rubenbp.android.a3dviewer;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -10,6 +11,7 @@ import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -39,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
     private int grantResults[];
 
 
-    public class get3DFiles  extends AsyncTask<URL,Void,File>
+   /* public class get3DFiles  extends AsyncTask<URL,Void,File>
     {
 
         @Override
@@ -130,23 +132,28 @@ public class MainActivity extends AppCompatActivity {
 
     // TODO 9 Mirar como puedo pedir el permiso en tiempo real, sino en versiones superiores a android 6 petara
 
+    */
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        get3DFiles getFile= new get3DFiles();
+        //get3DFiles getFile= new get3DFiles();
 
-        try {
+        /*try {
             URL url = new URL("http://www.robotstxt.org/robotstxt.html");
             getFile.execute(url);
         } catch (MalformedURLException e) {
             e.printStackTrace();
-        }
+        }*/
 
 
+    }
 
-
+    public void Onclick(View view)
+    {
+        Intent intent= new Intent(this,ModelosActivity.class);
+        startActivity(intent);
     }
 
 }
