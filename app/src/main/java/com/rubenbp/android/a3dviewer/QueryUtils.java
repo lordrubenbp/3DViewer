@@ -2,6 +2,7 @@ package com.rubenbp.android.a3dviewer;
 
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -139,7 +140,8 @@ public class QueryUtils {
                 Log.e(LOG_TAG, "Error response code: " + urlConnection.getResponseCode());
             }
         } catch (IOException e) {
-            Log.e(LOG_TAG, "Problem retrieving the earthquake JSON results.", e);
+            Log.e(LOG_TAG, "Problem retrieving the model3D JSON results.", e);
+
         } finally {
             if (urlConnection != null) {
                 urlConnection.disconnect();

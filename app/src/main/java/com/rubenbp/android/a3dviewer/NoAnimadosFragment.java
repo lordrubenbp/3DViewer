@@ -7,12 +7,15 @@ import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +24,11 @@ import java.util.List;
 public class NoAnimadosFragment extends Fragment {
 
 
-    public final String URL="http://192.168.0.104/rest_service/get_all_modelos_noanimados";
+    private final String URL="http://192.168.0.104/rest_service/get_all_modelos_noanimados";
+    private ProgressBar mProgressBar;
+    private GridView mGridView;
+    private TextView mErrorMessage;
+    private ModeloAsyncTask task;
 
     private ModeloAdapter mAdapter;
     private class ModeloAsyncTask extends AsyncTask<String, Void, List<Modelo>> {
@@ -33,14 +40,31 @@ public class NoAnimadosFragment extends Fragment {
                 return null;
             }
 
+
             List<Modelo> result = QueryUtils.fetchModeloData(urls[0]);
+
             return result;
+        }
+
+        @Override
+        protected void onPreExecute() {
+
+            mProgressBar.setVisibility(View.VISIBLE);
+            mErrorMessage.setVisibility(View.INVISIBLE);
         }
 
         @Override
         protected void onPostExecute(List<Modelo> data) {
             // Clear the adapter of previous earthquake data
             // TODO Falta el ModeloAdapter que se ocupa de coger los datos extraidos y colocarlos en el layout
+
+            if(data==null)
+            {
+                Log.v("CONEXION","todo mallll");
+                mErrorMessage.setVisibility(View.VISIBLE);
+            }
+            mProgressBar.setVisibility(View.INVISIBLE);
+            //mGridView.setVisibility(View.VISIBLE);
             mAdapter.clear();
 
             // If there is a valid list of {@link Earthquake}s, then add them to the adapter's
@@ -50,7 +74,6 @@ public class NoAnimadosFragment extends Fragment {
             }
         }
     }
-
     public NoAnimadosFragment() {
         // Required empty public constructor
     }
@@ -61,9 +84,11 @@ public class NoAnimadosFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.modelos_list, container, false);
 
 
-        GridView gridView = (GridView) rootView.findViewById(R.id.gridview);
+        mGridView = (GridView) rootView.findViewById(R.id.gridview);
+        mProgressBar = (ProgressBar) rootView.findViewById(R.id.progress_bar);
+        mErrorMessage=(TextView)rootView.findViewById(R.id.error_message);
 
-        ModeloAsyncTask task = new ModeloAsyncTask();
+         task = new ModeloAsyncTask();
         task.execute(URL);
 
         // Create a new adapter that takes an empty list of earthquakes as input
@@ -71,9 +96,9 @@ public class NoAnimadosFragment extends Fragment {
 
         // Set the adapter on the {@link ListView}
         // so the list can be populated in the user interface
-        gridView.setAdapter(mAdapter);
+        mGridView.setAdapter(mAdapter);
 
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
 
@@ -84,6 +109,21 @@ public class NoAnimadosFragment extends Fragment {
         return rootView;
     }
 
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+
+        // Make sure that we are currently visible
+        if (this.isVisible()) {
+            // If we are becoming invisible, then...
+            if (!isVisibleToUser&& (mErrorMessage.getVisibility()==View.VISIBLE)) {
+                task= new ModeloAsyncTask();
+                task.execute(URL);
+                Log.v("AnimadosFragment", "Reintentar conexion");
+
+            }
+        }
+    }
 
 
 }

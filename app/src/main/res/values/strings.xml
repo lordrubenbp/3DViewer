@@ -5,4 +5,5 @@
     <string name="subir03D">Subir Objetos3D</string>
     <string name="animados">Animados</string>
     <string name="no_animados">No animados</string>
+    <string name="error_conexion">No ha sido posible conectarse al servidor</string>
 </resources>
