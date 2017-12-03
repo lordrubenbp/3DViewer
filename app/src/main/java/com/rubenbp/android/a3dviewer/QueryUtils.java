@@ -1,14 +1,23 @@
 package com.rubenbp.android.a3dviewer;
 
+import android.content.Context;
+import android.os.Build;
+import android.os.Environment;
+import android.support.annotation.RequiresApi;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.TextView;
 
+import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -18,6 +27,9 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 /**
  * Created by ruben on 22/11/2017.
@@ -32,6 +44,80 @@ public class QueryUtils {
     private QueryUtils() {
     }
 
+
+
+    public static  void unZipIt(File zipFile){
+
+        byte[] buffer = new byte[1024];
+
+        Log.v("NOMBRE FILE", zipFile.getName());
+        String[]splitIdModelo=zipFile.getName().split("\\.");
+        String idModelo=splitIdModelo[0];
+        File outputFolder= new File(Environment.getExternalStorageDirectory().getAbsoluteFile(),"modelos"+File.separator+idModelo);
+
+        Log.v("OUTPUTFOLDER",outputFolder.getAbsolutePath());
+
+        try{
+
+
+            if(!outputFolder.exists()){
+                outputFolder.mkdir();
+            }
+
+            //get the zip file content
+            ZipInputStream zis =
+                    new ZipInputStream(new FileInputStream(zipFile));
+            //get the zipped file list entry
+            ZipEntry ze = zis.getNextEntry();
+
+            while(ze!=null){
+
+                String fileName = ze.getName();
+                File newFile = new File(outputFolder + File.separator + fileName);
+
+                //System.out.println("file unzip : "+ newFile.getAbsoluteFile());
+
+                //create all non exists folders
+                //else you will hit FileNotFoundException for compressed folder
+                new File(newFile.getParent()).mkdirs();
+
+                FileOutputStream fos = new FileOutputStream(newFile);
+
+                int len;
+                while ((len = zis.read(buffer)) > 0) {
+                    fos.write(buffer, 0, len);
+                }
+
+                fos.close();
+                ze = zis.getNextEntry();
+            }
+
+            zis.closeEntry();
+            zis.close();
+
+            //System.out.println("Done");
+
+        }catch(IOException ex){
+            ex.printStackTrace();
+        }
+
+        Log.v("UNZIP","DONE");
+    }
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    public static void fetchModeloFile(String requestUrl, int id)
+    {
+        // Create URL object
+        URL url = createUrl(requestUrl);
+
+       File file=null;
+        try {
+            file = makeHttpRequestForFile(url,id);
+            Log.v("RESPONSE",file.getName());
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Problem making the HTTP request.", e);
+        }
+        unZipIt(file);
+    }
 
     public static List<Modelo> fetchModeloData(String requestUrl) {
         // Create URL object
@@ -94,7 +180,6 @@ public class QueryUtils {
             Log.e("QueryUtils", "Problem parsing the earthquake JSON results", e);
         }
 
-        // Return the list of earthquakes
         return modelos;
     }
     private static String readFromStream(InputStream inputStream) throws IOException {
@@ -114,6 +199,67 @@ public class QueryUtils {
     /**
      * Make an HTTP request to the given URL and return a String as the response.
      */
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    private static File makeHttpRequestForFile(URL url, int id) throws IOException {
+
+        String idString=id+".zip";
+
+        //File file= new File(Environment.getExternalStorageDirectory()+idString);
+
+        File file = new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), idString);
+
+
+
+        Log.v("FILE",file.getAbsolutePath());
+
+        if(file.exists())
+        {
+            Log.v("FILE","EXISTE");
+        }
+        else
+            file.createNewFile();
+            Log.v("FILE",file.getAbsolutePath());
+
+
+        // If the URL is null, then return early.
+        if (url == null) {
+            return file;
+        }
+
+        HttpURLConnection urlConnection = null;
+        InputStream inputStream = null;
+        try {
+            urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setReadTimeout(10000 /* milliseconds */);
+            urlConnection.setConnectTimeout(15000 /* milliseconds */);
+            urlConnection.setRequestMethod("GET");
+            urlConnection.connect();
+
+            // If the request was successful (response code 200),
+            // then read the input stream and parse the response.
+            if (urlConnection.getResponseCode() == 200) {
+                inputStream = urlConnection.getInputStream();
+                FileUtils.copyInputStreamToFile(inputStream, file);
+
+            } else {
+                Log.e(LOG_TAG, "Error response code: " + urlConnection.getResponseCode());
+            }
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Problem retrieving the model3D JSON results.", e);
+
+        } finally {
+            if (urlConnection != null) {
+                urlConnection.disconnect();
+            }
+            if (inputStream != null) {
+                // Closing the input stream could throw an IOException, which is why
+                // the makeHttpRequest(URL url) method signature specifies than an IOException
+                // could be thrown.
+                inputStream.close();
+            }
+        }
+        return file;
+    }
     private static String makeHttpRequest(URL url) throws IOException {
         String jsonResponse = "";
 

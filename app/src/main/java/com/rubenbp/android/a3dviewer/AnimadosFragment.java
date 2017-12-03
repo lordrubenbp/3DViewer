@@ -1,5 +1,7 @@
 package com.rubenbp.android.a3dviewer;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -11,6 +13,7 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -102,6 +105,21 @@ public class AnimadosFragment extends Fragment {
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
 
                 // AQUI DEBO LLAMAR AL ACTIVITY QUE MUESTRA DETALLE
+
+                // Find the current earthquake that was clicked on
+                Modelo currentModelo = mAdapter.getItem(position);
+
+                //Toast.makeText(getActivity(),currentModelo.getId()+"",Toast.LENGTH_LONG).show();
+
+                // Create a new intent to view the earthquake URI
+
+                Intent intent= new Intent(getActivity(),ModeloDetails.class);
+                intent.putExtra("id",currentModelo.getId()+"");
+                startActivity(intent);
+
+                // Send the intent to launch a new activity
+                //startActivity(websiteIntent);
+
             }
         });
 
