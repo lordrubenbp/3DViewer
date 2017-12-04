@@ -11,12 +11,17 @@ import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class ModeloDetails extends AppCompatActivity {
 
     private String URL="http://192.168.0.104/rest_service/get_data?id=";
     private String idModel="";
+    private TextView nombreModeloTextView;
+    private TextView extensionModeloTextView;
+    private TextView tamannoModeloTextView;
 
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
@@ -67,18 +72,33 @@ public class ModeloDetails extends AppCompatActivity {
         setContentView(R.layout.activity_modelo_details);
 
 
-            verifyStoragePermissions(this);
+            //verifyStoragePermissions(this);
+
+            nombreModeloTextView=(TextView)findViewById(R.id.detalle_modelo_nombre);
+            extensionModeloTextView=(TextView)findViewById(R.id.detalle_modelo_extension);
+            tamannoModeloTextView=(TextView)findViewById(R.id.detalle_modelo_tamaño);
 
             Intent intent = getIntent();
 
             String id= intent.getStringExtra("id");
+            idModel=id;
+            String nombreModelo=intent.getStringExtra("nombre");
+            String extensionModelo=intent.getStringExtra("extension");
+            String tamannoModelo=intent.getStringExtra("tamanno");
 
-            URL=URL+id;
+            nombreModeloTextView.setText("Nombre: "+nombreModelo);
+            extensionModeloTextView.setText("Extension: "+extensionModelo);
+            tamannoModeloTextView.setText("Tamaño: "+tamannoModelo);
 
+
+
+    }
+    public void OnClickDownloadButton(View view)
+    {
+            URL=URL+idModel;
             ModeloFileAsyncTask modeloFileAsyncTask= new ModeloFileAsyncTask();
             modeloFileAsyncTask.execute(URL);
-
-            idModel=id;
-            Toast.makeText(this,id,Toast.LENGTH_LONG).show();
+            idModel=idModel;
+            Toast.makeText(this,idModel,Toast.LENGTH_LONG).show();
     }
 }

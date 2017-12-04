@@ -3,7 +3,9 @@
     <color name="colorPrimary">#3f51b5</color>
     <color name="colorPrimaryDark">#303f9f</color>
     <color name="colorAccent">#ff4081</color>
-    <color name="colorBackground">#ECEFF1</color>
-    <color name="white">#FFFFFF</color>
-    <color name="orange">#FFC107</color>
+    <color name="colorBackground">#eceff1</color>
+    <color name="white">#ffffff</color>
+    <color name="orange">#ffc107</color>
+    <color name="grey_blue_button">#cfd8dc</color>
+    <color name="green_button">#558b2f</color>
 </resources>

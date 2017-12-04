@@ -23,7 +23,7 @@
         </activity>
         <activity android:name=".ModelosActivity"
             android:parentActivityName=".MainActivity"
-            android:label="Descargar modelos">
+            android:label="@string/descargar03D">
 
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY" android:value=".MainActivity"/>
@@ -31,7 +31,7 @@
         </activity>
         <activity android:name=".ModeloDetails"
             android:parentActivityName=".ModelosActivity"
-            android:label="Detalle">
+            android:label="@string/detalle_modelo">
             <meta-data
              android:name="android.support.PARENT_ACTIVITY" android:value=".ModelosActivity"/>
         </activity>

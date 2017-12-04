@@ -15,6 +15,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.apache.commons.io.FileUtils;
+
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
@@ -116,6 +118,12 @@ public  class ModelosFragment extends Fragment {
 
                 Intent intent= new Intent(getActivity(),ModeloDetails.class);
                 intent.putExtra("id",currentModelo.getId()+"");
+                intent.putExtra("nombre",currentModelo.getNombre());
+                long tamanno= Long.parseLong(currentModelo.getTamanno());
+                intent.putExtra("tamanno", FileUtils.byteCountToDisplaySize(tamanno));
+                intent.putExtra("extension",currentModelo.getExtension());
+
+
                 startActivity(intent);
 
                 // Send the intent to launch a new activity
@@ -127,6 +135,7 @@ public  class ModelosFragment extends Fragment {
         return rootView;
     }
 
+    //evento que se lanza cuando el fragment no es visible
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);

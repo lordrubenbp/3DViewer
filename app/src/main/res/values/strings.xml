@@ -1,9 +1,10 @@
 <resources>
     <string name="app_name">3DViewer</string>
-    <string name="descargar03D">Descargar Objeto3D</string>
-    <string name="mis03D">Mis Objetos3D</string>
-    <string name="subir03D">Subir Objetos3D</string>
+    <string name="descargar03D">Descargar objeto3D</string>
+    <string name="mis03D">Mis objetos3D</string>
+    <string name="subir03D">Subir objetos3D</string>
     <string name="animados">Animados</string>
     <string name="no_animados">No animados</string>
     <string name="error_conexion">No ha sido posible conectarse al servidor</string>
+    <string name="detalle_modelo">Detalle</string>
 </resources>

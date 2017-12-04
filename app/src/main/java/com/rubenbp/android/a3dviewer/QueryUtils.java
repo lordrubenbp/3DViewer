@@ -167,7 +167,11 @@ public class QueryUtils {
 
                 String tipo=currentModelo.getString("tipo");
 
-                Modelo modelo= new Modelo(id,nombre,tipo);
+                String tamanno=currentModelo.getString("tamaño");
+
+                String extension=currentModelo.getString("extension");
+
+                Modelo modelo= new Modelo(id,nombre,tipo,tamanno,extension);
 
                 modelos.add(modelo);
 
@@ -240,6 +244,8 @@ public class QueryUtils {
             if (urlConnection.getResponseCode() == 200) {
                 inputStream = urlConnection.getInputStream();
                 FileUtils.copyInputStreamToFile(inputStream, file);
+
+               Log.v("TAMAÑO_ARCHIVO",FileUtils.byteCountToDisplaySize(file.length()));
 
             } else {
                 Log.e(LOG_TAG, "Error response code: " + urlConnection.getResponseCode());

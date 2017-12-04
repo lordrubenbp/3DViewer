@@ -1,9 +1,96 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorBackground"
+    android:orientation="vertical"
+    android:padding="16dp"
     tools:context="com.rubenbp.android.a3dviewer.ModeloDetails">
 
-</android.support.constraint.ConstraintLayout>
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="3"
+        android:background="@color/orange"
+        android:scaleType="fitCenter"
+        android:src="@drawable/objeto3d" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="3"
+        android:background="@color/white"
+        android:orientation="vertical"
+        android:paddingBottom="20dp"
+        android:paddingTop="20dp"
+        android:paddingLeft="20dp">
+
+        <TextView
+            android:id="@+id/detalle_modelo_nombre"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:text="Nombre: silla_salon"
+
+            android:textSize="30sp" />
+
+        <TextView
+            android:id="@+id/detalle_modelo_extension"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:text="Extension: .obj"
+            android:gravity="center_vertical"
+            android:textSize="25sp" />
+
+        <TextView
+            android:id="@+id/detalle_modelo_tamaño"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:text="Tamaño: 40MB"
+            android:gravity="center_vertical"
+            android:textSize="25sp" />
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/detalle_button_visor3D"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="10dp"
+        android:layout_weight="1"
+        android:background="@color/grey_blue_button"
+        android:elevation="0dp"
+        android:text="Ver en visor3D"
+        android:textAlignment="center"
+        android:textSize="15sp"
+        tools:background="@color/grey_blue_button" />
+
+    <Button
+        android:id="@+id/detalle_button_realidad_virtual"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="10dp"
+        android:layout_weight="1"
+        android:background="@color/grey_blue_button"
+        android:text="Ver en realidad virtual"
+        android:textSize="15sp" />
+
+    <Button
+        android:id="@+id/detalle_button_descargar"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="10dp"
+        android:layout_weight="1"
+        android:background="@color/green_button"
+        android:text="Descargar"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        android:onClick="OnClickDownloadButton"/>
+
+
+</LinearLayout>

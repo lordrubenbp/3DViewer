@@ -10,13 +10,17 @@ public class Modelo {
     private int id;
     private String nombre;
     private String tipo;
+    private String tamanno;
+    private String extension;
 
-    public Modelo(int id, String nombre, String tipo)
+    public Modelo(int id, String nombre, String tipo,String tamanno,String extension )
     {
 
         this.id = id;
         this.nombre = nombre;
         this.tipo = tipo;
+        this.tamanno=tamanno;
+        this.extension=extension;
     }
 
     public String getNombre() {
@@ -41,5 +45,21 @@ public class Modelo {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public String getTamanno() {
+        return tamanno;
+    }
+
+    public void setTamanno(String tamanno) {
+        this.tamanno = tamanno;
+    }
+
+    public String getExtension() {
+        return extension;
+    }
+
+    public void setExtension(String extension) {
+        this.extension = extension;
     }
 }
