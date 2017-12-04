@@ -21,8 +21,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ModelosActivity" />
-        <activity android:name=".ModeloDetails"></activity>
+        <activity android:name=".ModelosActivity"
+            android:parentActivityName=".MainActivity"
+            android:label="Descargar modelos">
+
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY" android:value=".MainActivity"/>
+
+        </activity>
+        <activity android:name=".ModeloDetails"
+            android:parentActivityName=".ModelosActivity"
+            android:label="Detalle">
+            <meta-data
+             android:name="android.support.PARENT_ACTIVITY" android:value=".ModelosActivity"/>
+        </activity>
     </application>
 
 </manifest>
