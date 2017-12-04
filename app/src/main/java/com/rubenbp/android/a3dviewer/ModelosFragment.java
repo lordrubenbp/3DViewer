@@ -23,9 +23,10 @@ import java.util.List;
  * Created by ruben on 22/11/2017.
  */
 
-public class AnimadosFragment extends Fragment {
+public  class ModelosFragment extends Fragment {
 
-    private final String URL="http://192.168.0.104/rest_service/get_all_modelos_animados";
+    //private  String URL="http://192.168.0.104/rest_service/get_all_modelos_animados";
+    private String URL="";
     private ProgressBar mProgressBar;
     private GridView mGridView;
     private TextView mErrorMessage;
@@ -77,7 +78,7 @@ public class AnimadosFragment extends Fragment {
         }
     }
 
-    public AnimadosFragment() {
+    public ModelosFragment() {
         // Required empty public constructor
     }
 
@@ -136,10 +137,15 @@ public class AnimadosFragment extends Fragment {
             if (!isVisibleToUser&& (mErrorMessage.getVisibility()==View.VISIBLE)) {
                 task= new ModeloAsyncTask();
                 task.execute(URL);
-                Log.v("AnimadosFragment", "Reintentar conexion");
+                Log.v("ModelosFragment", "Reintentar conexion");
 
             }
         }
+    }
+
+    public void setURL(String URL)
+    {
+        this.URL=URL;
     }
 
 

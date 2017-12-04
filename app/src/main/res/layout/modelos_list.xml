@@ -19,11 +19,12 @@ android:paddingTop="@dimen/activity_vertical_margin"
         android:visibility="invisible" />
     <TextView
         android:id="@+id/error_message"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:visibility="invisible"
         android:layout_centerInParent="true"
         android:text="@string/error_conexion"
+        android:gravity="center"
         android:textAllCaps="true"/>
 <GridView
     android:visibility="visible"

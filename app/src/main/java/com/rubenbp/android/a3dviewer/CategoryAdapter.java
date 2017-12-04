@@ -5,14 +5,14 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
-/**
- * {@link CategoryAdapter} is a {@link FragmentPagerAdapter} that can provide the layout for
- * each list item based on a data source which is a list of {@link Word} objects.
- */
+
 public class CategoryAdapter extends FragmentPagerAdapter {
 
     /** Context of the app */
     private Context mContext;
+    private  String urlAnimados="http://192.168.0.104/rest_service/get_all_modelos_animados";
+    private String urlNoAnimados="http://192.168.0.104/rest_service/get_all_modelos_noanimados";
+
 
     /**
      * Create a new {@link CategoryAdapter} object.
@@ -32,9 +32,18 @@ public class CategoryAdapter extends FragmentPagerAdapter {
     @Override
     public Fragment getItem(int position) {
         if (position == 0) {
-            return new AnimadosFragment();
-        } else
-            return new NoAnimadosFragment();
+
+            ModelosFragment modelosFragmentAnimados = new ModelosFragment();
+            modelosFragmentAnimados.setURL(urlAnimados);
+            //return new ModelosFragment();
+            return modelosFragmentAnimados;
+
+        } else {
+            ModelosFragment modelosFragmentNoAnimados = new ModelosFragment();
+            modelosFragmentNoAnimados.setURL(urlNoAnimados);
+            //return new NoAnimadosFragment();
+            return modelosFragmentNoAnimados;
+        }
 
 
     }
