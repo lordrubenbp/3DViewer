@@ -39,6 +39,7 @@ public class QueryUtils {
 
 
     private static final String LOG_TAG ="URL format";
+    private static Context context;
 
 
     private QueryUtils() {
@@ -46,14 +47,17 @@ public class QueryUtils {
 
 
 
-    public static  void unZipIt(File zipFile){
+    public static File unZipIt(File zipFile){
 
         byte[] buffer = new byte[1024];
 
         Log.v("NOMBRE FILE", zipFile.getName());
         String[]splitIdModelo=zipFile.getName().split("\\.");
         String idModelo=splitIdModelo[0];
-        File outputFolder= new File(Environment.getExternalStorageDirectory().getAbsoluteFile(),"modelos"+File.separator+idModelo);
+
+        //File outputFolder= new File(Environment.getExternalStorageDirectory().getAbsoluteFile(),"modelos"+File.separator+idModelo);
+        File outputFolder= new File(context.getCacheDir().getAbsoluteFile(),"modelos"+File.separator+idModelo);
+
 
         Log.v("OUTPUTFOLDER",outputFolder.getAbsolutePath());
 
@@ -94,6 +98,7 @@ public class QueryUtils {
 
             zis.closeEntry();
             zis.close();
+            zipFile.delete();
 
             //System.out.println("Done");
 
@@ -102,21 +107,28 @@ public class QueryUtils {
         }
 
         Log.v("UNZIP","DONE");
+        return outputFolder;
     }
     @RequiresApi(api = Build.VERSION_CODES.M)
-    public static void fetchModeloFile(String requestUrl, int id)
+    public static File fetchModeloFile(String requestUrl, int id, Context applicationContext)
     {
+        context=applicationContext;
         // Create URL object
         URL url = createUrl(requestUrl);
 
        File file=null;
+       File dirTempFile=null;
         try {
             file = makeHttpRequestForFile(url,id);
             Log.v("RESPONSE",file.getName());
         } catch (IOException e) {
             Log.e(LOG_TAG, "Problem making the HTTP request.", e);
         }
-        unZipIt(file);
+
+        dirTempFile=unZipIt(file);
+
+        return dirTempFile;
+
     }
 
     public static List<Modelo> fetchModeloData(String requestUrl) {
@@ -210,7 +222,9 @@ public class QueryUtils {
 
         //File file= new File(Environment.getExternalStorageDirectory()+idString);
 
-        File file = new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), idString);
+        //File file = new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), idString);
+
+        File file = new File(context.getCacheDir().getAbsoluteFile(), idString);
 
 
 
@@ -221,7 +235,7 @@ public class QueryUtils {
             Log.v("FILE","EXISTE");
         }
         else
-            file.createNewFile();
+            //file.createNewFile();
             Log.v("FILE",file.getAbsolutePath());
 
 

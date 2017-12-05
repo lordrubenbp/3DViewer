@@ -35,6 +35,9 @@
             <meta-data
              android:name="android.support.PARENT_ACTIVITY" android:value=".ModelosActivity"/>
         </activity>
+        <activity android:name=".jpct.JPCTActivity">
+
+        </activity>
     </application>
 
 </manifest>

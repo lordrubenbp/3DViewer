@@ -7,13 +7,22 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Environment;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.rubenbp.android.a3dviewer.jpct.JPCTActivity;
+
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.IOException;
 
 public class ModeloDetails extends AppCompatActivity {
 
@@ -22,6 +31,7 @@ public class ModeloDetails extends AppCompatActivity {
     private TextView nombreModeloTextView;
     private TextView extensionModeloTextView;
     private TextView tamannoModeloTextView;
+    private File modeloTempFileDir;
 
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
@@ -29,11 +39,11 @@ public class ModeloDetails extends AppCompatActivity {
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
 
-    private class ModeloFileAsyncTask extends AsyncTask<String, Void, String> {
+    private class ModeloFileAsyncTask extends AsyncTask<String, Void, File> {
 
         @RequiresApi(api = Build.VERSION_CODES.M)
         @Override
-        protected String doInBackground(String... urls) {
+        protected File doInBackground(String... urls) {
 
             String result="";
             // Don't perform the request if there are no URLs, or the first URL is null.
@@ -41,13 +51,14 @@ public class ModeloDetails extends AppCompatActivity {
                 return null;
             }
 
-            QueryUtils.fetchModeloFile(urls[0],Integer.parseInt(idModel));
+            return QueryUtils.fetchModeloFile(urls[0],Integer.parseInt(idModel),getApplicationContext());
 
-            return result;
+
         }
         @Override
-        protected void onPostExecute(String string) {
+        protected void onPostExecute(File file) {
 
+            modeloTempFileDir=file;
         }
     }
 
@@ -90,15 +101,29 @@ public class ModeloDetails extends AppCompatActivity {
             extensionModeloTextView.setText("Extension: "+extensionModelo);
             tamannoModeloTextView.setText("Tamaño: "+tamannoModelo);
 
+            URL=URL+idModel;
+            ModeloFileAsyncTask modeloFileAsyncTask= new ModeloFileAsyncTask();
+            modeloFileAsyncTask.execute(URL);
+            idModel=id;
+
+
 
 
     }
     public void OnClickDownloadButton(View view)
     {
-            URL=URL+idModel;
-            ModeloFileAsyncTask modeloFileAsyncTask= new ModeloFileAsyncTask();
-            modeloFileAsyncTask.execute(URL);
-            idModel=idModel;
-            Toast.makeText(this,idModel,Toast.LENGTH_LONG).show();
+
+        File outputFolder= new File(Environment.getExternalStorageDirectory().getAbsoluteFile(),"3DViewer"+File.separator+"modelos"+File.separator+idModel);
+
+        try {
+            //FileUtils.moveDirectory(modeloTempFileDir,outputFolder);
+            FileUtils.copyDirectory(modeloTempFileDir,outputFolder,true);
+            Toast.makeText(this,"MODELO DESCARGADO ",Toast.LENGTH_SHORT).show();
+            modeloTempFileDir.deleteOnExit();
+            Intent intent= new Intent(this, JPCTActivity.class);
+            startActivity(intent);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
