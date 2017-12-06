@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,7 +32,12 @@ public class ModeloDetails extends AppCompatActivity {
     private TextView nombreModeloTextView;
     private TextView extensionModeloTextView;
     private TextView tamannoModeloTextView;
+    private Button visor3DButton;
+    private Button visorRVButton;
+    private Button descargarButton;
     private File modeloTempFileDir;
+    private File modeloAbsolutFileDir;
+    private boolean descargarButtonState;
 
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
@@ -88,6 +94,10 @@ public class ModeloDetails extends AppCompatActivity {
             nombreModeloTextView=(TextView)findViewById(R.id.detalle_modelo_nombre);
             extensionModeloTextView=(TextView)findViewById(R.id.detalle_modelo_extension);
             tamannoModeloTextView=(TextView)findViewById(R.id.detalle_modelo_tamaño);
+            visor3DButton=(Button)findViewById(R.id.detalle_button_visor3D);
+            visorRVButton=(Button)findViewById(R.id.detalle_button_realidad_virtual);
+            descargarButton=(Button)findViewById(R.id.detalle_button_descargar);
+
 
             Intent intent = getIntent();
 
@@ -100,17 +110,72 @@ public class ModeloDetails extends AppCompatActivity {
             nombreModeloTextView.setText("Nombre: "+nombreModelo);
             extensionModeloTextView.setText("Extension: "+extensionModelo);
             tamannoModeloTextView.setText("Tamaño: "+tamannoModelo);
+            modeloAbsolutFileDir= new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), "3DViewer" + File.separator + "modelos" + File.separator + idModel);
+
 
             URL=URL+idModel;
             ModeloFileAsyncTask modeloFileAsyncTask= new ModeloFileAsyncTask();
             modeloFileAsyncTask.execute(URL);
-            idModel=id;
+
+
+            //Cuando pulso accede a el archivo temporal del modelo y se lo manda a el activity
+            visor3DButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    Intent intent= new Intent(getApplicationContext(), JPCTActivity.class);
+                    startActivity(intent);
+                }
+            });
+            //Cuando pulso muevo el archivo temporal a la ubicacion fija
+            // TODO Debo hacer que sepa que cuando se descarga, cambie el boton a borrar y el path de los modelos pase a el absoluto
+            descargarButtonState=false;
+            descargarButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    //descarga
+                    if(!descargarButtonState) {
+                        try {
+                            FileUtils.copyDirectory(modeloTempFileDir, modeloAbsolutFileDir, true);
+                            modeloTempFileDir.deleteOnExit();
+                            Toast.makeText(getApplicationContext(), "MODELO DESCARGADO ", Toast.LENGTH_SHORT).show();
+                            descargarButton.setBackgroundColor(getResources().getColor(R.color.red_button));
+                            descargarButton.setText(getResources().getString(R.string.borrar_button));
+                            descargarButtonState=true;
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        //borra
+                    }else
+                        {
+                            try {
+                                //antes de poder borrar un directorio debo borrar su contenido
+                                FileUtils.cleanDirectory(modeloAbsolutFileDir);
+                                modeloAbsolutFileDir.delete();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            //modeloAbsolutFileDir.delete();
+                            Toast.makeText(getApplicationContext(), "MODELO BORRADO ", Toast.LENGTH_SHORT).show();
+                            descargarButton.setBackgroundColor(getResources().getColor(R.color.green_button));
+                            descargarButton.setText(getResources().getString(R.string.descargar_button));
+                            descargarButtonState=false;
+
+                        }
+
+
+                }
+            });
+
+
 
 
 
 
     }
-    public void OnClickDownloadButton(View view)
+    /*public void OnClickDownloadButton(View view)
     {
 
         File outputFolder= new File(Environment.getExternalStorageDirectory().getAbsoluteFile(),"3DViewer"+File.separator+"modelos"+File.separator+idModel);
@@ -125,5 +190,5 @@ public class ModeloDetails extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
+    }*/
 }

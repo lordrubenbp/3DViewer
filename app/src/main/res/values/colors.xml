@@ -8,4 +8,5 @@
     <color name="orange">#ffc107</color>
     <color name="grey_blue_button">#cfd8dc</color>
     <color name="green_button">#558b2f</color>
+    <color name="red_button">#FF3D00</color>
 </resources>

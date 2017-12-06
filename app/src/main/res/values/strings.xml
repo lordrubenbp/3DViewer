@@ -7,4 +7,6 @@
     <string name="no_animados">No animados</string>
     <string name="error_conexion">No ha sido posible conectarse al servidor</string>
     <string name="detalle_modelo">Detalle</string>
+    <string name="descargar_button">Descargar</string>
+    <string name="borrar_button">Borrar</string>
 </resources>
