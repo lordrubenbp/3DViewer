@@ -3,58 +3,40 @@ package com.rubenbp.android.a3dviewer.jpct;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import com.rubenbp.android.a3dviewer.R;
 import com.threed.jpct.Animation;
 import com.threed.jpct.Camera;
-import com.threed.jpct.CollisionEvent;
-import com.threed.jpct.CollisionListener;
 import com.threed.jpct.Config;
 import com.threed.jpct.FrameBuffer;
-import com.threed.jpct.GLSLShader;
-import com.threed.jpct.ITextureEffect;
 import com.threed.jpct.Interact2D;
 import com.threed.jpct.Light;
 import com.threed.jpct.Loader;
 import com.threed.jpct.Logger;
-import com.threed.jpct.Matrix;
 import com.threed.jpct.Mesh;
-import com.threed.jpct.NPOTTexture;
 import com.threed.jpct.Object3D;
-import com.threed.jpct.Primitives;
 import com.threed.jpct.RGBColor;
-import com.threed.jpct.ShaderLocator;
 import com.threed.jpct.SimpleVector;
 import com.threed.jpct.Texture;
 import com.threed.jpct.TextureManager;
 import com.threed.jpct.World;
 import com.threed.jpct.util.BitmapHelper;
 
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Paint;
+import android.graphics.Color;
 import android.graphics.Rect;
-import android.graphics.Typeface;
-import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
-import android.os.Environment;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.GestureDetector;
-import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ScaleGestureDetector.OnScaleGestureListener;
-
-import org.apache.commons.io.FileUtils;
 
 import raft.jpct.bones.Animated3D;
 import raft.jpct.bones.AnimatedGroup;
@@ -76,15 +58,12 @@ public class JPCT3DObject implements GLSurfaceView.Renderer, View.OnTouchListene
 	private float rotationX=0;
 	private float rotationY=0;
 	private float rotationZ=0;
-	private float rotationSpeed=1;
-	private int translationX=0;
-	private int translationY=0;
-	private int translationZ=0;
-	private float zoomMax=0;
-	private float zoomMin=0;
-	private float zoomSpeed = 5;
-	private float animationSpeed = 0;
-	private int animationSecuence = 0;
+	private float rotationSpeed=0.005f;
+	private float zoomMax=40;
+	private float zoomMin=10;
+	private float zoomSpeed = 0.5f;
+	private float animationSpeed = 1;
+	private int animationSecuence = 1;
 	public boolean animationActivated = false;
 	private boolean zoomActivated = false;
 	private boolean rotateActivated = false;
@@ -99,19 +78,14 @@ public class JPCT3DObject implements GLSurfaceView.Renderer, View.OnTouchListene
 	private float animateSeconds = 0f;
 	private static final int GRANULARITY = 25;
 
-	private Ticker ticker = new Ticker(16);
-	private float index = 0;
-
 	/// VARIABLES DE INTEREACCION CON EL OBJETO3D
 
 	private ScaleGestureDetector scaleGestureDetector;
 	private GestureDetector gestureDetector;
-	boolean followFingerMode = false;
 	boolean followFingerCollision = false;
 	boolean wideframeActivated = false;
 	private float factor;
 	private boolean firstScale = true;
-	private float oldFactor;
 	private float lastX, lastY;
 	private boolean pauseAnimation = false;
 	private static final float Z_PLANE = 0;
@@ -127,7 +101,7 @@ public class JPCT3DObject implements GLSurfaceView.Renderer, View.OnTouchListene
 	public SimpleVector cameraVector;
 	private CameraOrbitController cameraController;
 	private float[] bb = null;
-	public HashSet<String> texturesList;
+	public ArrayList<File> texturesList= new ArrayList<File>();
 
 	/// VARIABLES DE LA INTERFAZ DE USUARIO///
 
@@ -143,8 +117,8 @@ public class JPCT3DObject implements GLSurfaceView.Renderer, View.OnTouchListene
 	private float unidadMovimiento;
 	private float nPartesZoom;
 	private float nPartesMove;
-	private float moveSpeed = 5;
-	private boolean playAnimation = false;
+	private float moveSpeed = 3;
+	private boolean playAnimation = true;
 	protected int unidadesRecorridas = 0;
 	private int dimension;
 	private int aumentaPixel;
@@ -169,12 +143,11 @@ public class JPCT3DObject implements GLSurfaceView.Renderer, View.OnTouchListene
 	 * @param mActivity
 	 * @throws Throwable
 	 */
-	public JPCT3DObject(GLSurfaceView glView, final JPCTActivity mActivity) {
+	public JPCT3DObject(GLSurfaceView glView, JPCTActivity mActivity) {
 
 		this.glView = glView;
 		this.mActivity = mActivity;
-		loadParcelObjectData();
-		
+
 		if (world != null)
 			return;
 		world = new World();
@@ -182,7 +155,14 @@ public class JPCT3DObject implements GLSurfaceView.Renderer, View.OnTouchListene
 		// primero cargar el objeto3D y dependiendo de si tiene animacion o no y
 		// si es un bones o un md2 permitir que pase a animacion
 
-		
+		int color_int = ContextCompat.getColor(mActivity.getApplicationContext(), R.color.colorPrimary);
+
+		bgColor= new RGBColor(Color.red(color_int),Color.green(color_int),Color.blue(color_int));
+
+
+        extractDatasFromDir(mActivity.direccion);
+
+        loadTexturesFromDir();
 
 		object3D = load3DObject(nameObject3D, materialObject3D);
 
@@ -197,15 +177,8 @@ public class JPCT3DObject implements GLSurfaceView.Renderer, View.OnTouchListene
 		p.y = (bb[2] + bb[3]) / 2.0f;
 		p.z = (bb[4] + bb[5]) / 2.0f;
 		object3D.setCenter(p);
-		// carga de texturas dinamica
-		// probar con obj y mtl, md2
-		// controlar que el numero de cliq de animacion no se pase
-
 		world.setAmbientLight(127, 127, 127);
 		world.buildAllObjects();
-		
-
-		// mActivity.getTextures3D(textures3D);
 
 		scaleGestureDetector = new ScaleGestureDetector(mActivity, new OnScaleGestureListener() {
 
@@ -287,86 +260,56 @@ public class JPCT3DObject implements GLSurfaceView.Renderer, View.OnTouchListene
 		gestureDetector = new GestureDetector(mActivity, new GestureDetector.SimpleOnGestureListener() {
 
 			@Override
-			public boolean onDown(MotionEvent e) {
-				// TODO Auto-generated method stub
-				return false;
-			}
-
-			@Override
 			public boolean onDoubleTap(MotionEvent e) {
 
 				posInitObject3D();
 				return false;
 			}
 
-			@Override
-			public void onShowPress(MotionEvent e) {
-
-			}
-
-			@Override
-			public boolean onSingleTapConfirmed(MotionEvent e) {
-
-				// animationSecuence++;
-				// animationSpeed=0;
-
-				/*
-				 * if(mActivity.wideframeObject){ if (!followFingerMode) { if
-				 * (wideFrameActive) { wideFrameActive = false; } else {
-				 * wideFrameActive = true; } } }
-				 */
-
-				return false;
-			}
-
-			@Override
-			public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-
-				Log.d("Gesture ", " onScroll");
-				if (e1.getY() < e2.getY()) {
-					Log.d("Gesture ", " Scroll Down");
-
-				}
-				if (e1.getY() > e2.getY()) {
-					Log.d("Gesture ", " Scroll Up");
-
-				}
-				if (e1.getX() < e2.getX()) {
-					Log.d("Gesture ", " Scroll Right");
-
-				}
-				if (e1.getX() > e2.getX()) {
-					Log.d("Gesture ", " Scroll Left");
-
-					// object3D.rotateY((e1.getX()-e2.getX()) * 0.005f);
-				}
-
-				return true;
-
-			}
-
-			@Override
-			public void onLongPress(MotionEvent e) {
-
-				// .........modificacion..............//
-				/*
-				 * if(moveActivated) { if (!followFingerMode) { followFingerMode
-				 * = true; //bgColor = new RGBColor(100, 200, 6); } else {
-				 * followFingerMode = false; //bgColor = new RGBColor(200, 100,
-				 * 6); } }
-				 */
-
-			}
-
-			@Override
-			public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-				// TODO Auto-generated method stub
-				return false;
-			}
 		});
 
 	}
 
+
+
+	// TODO tengo que darle una pensada a esta funcion para que me extraiga todo lo que necesito, tanto ficheros ocmo texturas
+	private void extractDatasFromDir(File filesdir) {
+
+		File[] listOfFiles = filesdir.listFiles();
+
+		for (File file : listOfFiles) {
+			if (file.isFile()) {
+
+				if(file.getName().toLowerCase().endsWith("mtl"))
+				{
+					materialObject3D=file.getName();
+				}else if(file.getName().toLowerCase().endsWith("obj")||
+						file.getName().toLowerCase().endsWith("md2")||
+						file.getName().toLowerCase().endsWith("3ds")||
+						file.getName().toLowerCase().endsWith("asc")||
+						file.getName().toLowerCase().endsWith("bones"))
+				{
+					nameObject3D=file.getName();
+				}
+				Log.v("ARCHIVOS",file.getName());
+			}
+			else if(file.isDirectory()&&file.getName().toLowerCase().equals("texturas"))
+			{
+				animationActivated=true;
+
+				File[]listOfTextures=file.listFiles();
+				for(File filesTexturas:listOfTextures)
+				{
+					//Log.v("FILES-TEXTURA",filesTexturas.getName());
+					texturesList.add(filesTexturas);
+				}
+
+
+			}
+		}
+
+
+	}
 	/// METODOS DE CARGA DE ANIMACIONES DEL OBJECTO3D EN LA ESCENA///
 
 	/**
@@ -457,7 +400,7 @@ public class JPCT3DObject implements GLSurfaceView.Renderer, View.OnTouchListene
 																										// sequence
 
 		int keyframeCount = 0;
-		final float deltaTime = 0.2f; // max time between frames
+		final float deltaTime = 0.1f; // max time between frames
 
 		for (SkinClip clip : masterObject3DAnimated.getSkinClipSequence()) {
 			float clipTime = clip.getTime();
@@ -470,8 +413,8 @@ public class JPCT3DObject implements GLSurfaceView.Renderer, View.OnTouchListene
 			animations[i] = new Animation(keyframeCount);
 			animations[i].setClampingMode(Animation.USE_CLAMPING);
 		}
-		// System.out.println("------------ keyframeCount: " + keyframeCount +
-		// ", mesh size: " + masterNinja.getSize());
+		System.out.println("------------ keyframeCount: " + keyframeCount +
+		 ", mesh size: " + masterObject3DAnimated.getSize());
 		int count = 0;
 
 		int sequence = 0;
@@ -516,20 +459,36 @@ public class JPCT3DObject implements GLSurfaceView.Renderer, View.OnTouchListene
 	 * Funcion que lee las variables de configuracion del objeto3D que se quiere
 	 * v
 	 */
-	private void loadParcelObjectData() {
-
-		File outputFolderName= new File(Environment.getExternalStorageDirectory().getAbsoluteFile(),"3DViewer"+File.separator+"modelos"+File.separator+"15"+File.separator+"LEGO_Man.obj");
-		File outputFolderMaterial= new File(Environment.getExternalStorageDirectory().getAbsoluteFile(),"3DViewer"+File.separator+"modelos"+File.separator+"15"+File.separator+"LEGO_Man.mtl");
-
-		nameObject3D=outputFolderName.getAbsolutePath();
-		materialObject3D=outputFolderMaterial.getAbsolutePath();
 
 
+	private void loadTextureButtons() throws Exception {
+
+
+			Texture texture;
+			String textureName;
+
+			//recorrer la carpeta de assets,y cargar todos los botones pero preferiblemente ponerle en la carpeta raw
+
+			Field[] fields=R.raw.class.getFields();
+			for(int count=0; count < fields.length; count++){
+
+				textureName=fields[count].getName();
+				Log.v("TEXTURA-RAW",fields[count].getName());
+				//TextureManager.getInstance().removeTexture(textureName);
+				texture = new Texture(BitmapHelper.rescale(
+						BitmapHelper.loadImage(mActivity.getApplicationContext().getResources().openRawResource(fields[count].getInt(fields[count]))), dimension,
+						dimension), true);
+				texture.keepPixelData(true);
+				TextureManager.getInstance().addTexture(textureName, texture);
+
+
+			}
 
 
 	}
 
-	private void loadTextureButtons(String buttonName) throws Exception {
+
+	private void loadTextureButtonsOld(String buttonName) throws Exception {
 		try {
 			TextureManager.getInstance().removeTexture(buttonName);
 		} catch (Exception e) {
@@ -537,18 +496,18 @@ public class JPCT3DObject implements GLSurfaceView.Renderer, View.OnTouchListene
 			Log.v("TEXTURA BOTONES", "textura aun no declarada" + " " + buttonName);
 		}
 
+		String buttonNamee[]=buttonName.split("\\.");
 		try {
 			Texture texture;
 			String textureName;
-			textureName = buttonName;
+			textureName = buttonNamee[0];
 
 			texture = new Texture(BitmapHelper.rescale(
-					BitmapHelper.loadImage(mActivity.getApplicationContext().getAssets().open(textureName)), dimension,
+					BitmapHelper.loadImage(mActivity.getApplicationContext().getAssets().open(buttonName)), dimension,
 					dimension), true);
 			// texture = new Texture(mActivity.getAssets().open(textureName));
 			texture.keepPixelData(true);
 			TextureManager.getInstance().addTexture(textureName, texture);
-			texturesList = TextureManager.getInstance().getNames();
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -556,32 +515,30 @@ public class JPCT3DObject implements GLSurfaceView.Renderer, View.OnTouchListene
 		}
 	}
 
+
 	/**
 	 * Funcion que carga todas las texturas encontradas en el objeto parcel de
 	 * configuracion
 	 * 
 	 * @throws Exception
 	 */
-	private void loadTexturesParcel() {
+	private void loadTexturesFromDir() {
 		TextureManager.getInstance().flush();
 
-		if (texturePath != null) {
+		if (texturesList != null) {
 
-			for (int x = 0; x < texturePath.size(); x++) {
+			for (int x = 0; x < texturesList.size(); x++) {
 				Texture texture;
-				String textureName;
-				textureName = texturePath.get(x);
+
 				try {
-					texture = new Texture(mActivity.getAssets().open(textureName));
-					texture.keepPixelData(true);
-					TextureManager.getInstance().addTexture(textureName, texture);
-					texturesList = TextureManager.getInstance().getNames();
+					texture = new Texture(new FileInputStream(texturesList.get(x)));
+					//texture.keepPixelData(true);
+					TextureManager.getInstance().addTexture(texturesList.get(x).getName(), texture);
 
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				// System.out.println(al.get(x));
 
 			}
 
@@ -598,11 +555,9 @@ public class JPCT3DObject implements GLSurfaceView.Renderer, View.OnTouchListene
 	 */
 	private Object3D load3DObject(String nameObject, String materialObject) {
 
-		loadTexturesParcel();
 		Object3D myObject3D = null;
-		File outputFolderName= new File(Environment.getExternalStorageDirectory().getAbsoluteFile(),"3DViewer"+File.separator+"modelos"+File.separator+"15"+File.separator+"LEGO_Man.obj");
-		File outputFolderMaterial= new File(Environment.getExternalStorageDirectory().getAbsoluteFile(),"3DViewer"+File.separator+"modelos"+File.separator+"15"+File.separator+"LEGO_Man.mtl");
-		//FileInputStream fileInputStream = new FileInputStream(outputFolderName);
+        File outputFolderName=new File(mActivity.direccion.getAbsolutePath()+File.separator+nameObject);
+		File outputFolderMaterial=new File(mActivity.direccion.getAbsolutePath()+File.separator+materialObject);
 
 		/*
 		 * Creacion de los objetos
@@ -614,18 +569,18 @@ public class JPCT3DObject implements GLSurfaceView.Renderer, View.OnTouchListene
 							new FileInputStream(outputFolderMaterial), 1f));
 				}
 			} else if (nameObject.toLowerCase().endsWith("md2")) {
-				myObject3D = Object3D.mergeAll(Loader.loadMD2(mActivity.getModel3D(nameObject), 1f));
+				myObject3D = Object3D.mergeAll(Loader.loadMD2(new FileInputStream(outputFolderName), 1f));
 				isMd2 = true;
 			} else if (nameObject.toLowerCase().endsWith("3ds")) {
-				myObject3D = Object3D.mergeAll(Loader.load3DS(mActivity.getModel3D(nameObject), 1f));
+				myObject3D = Object3D.mergeAll(Loader.load3DS(new FileInputStream(outputFolderName), 1f));
 
 			} else if (nameObject.toLowerCase().endsWith("asc")) {
-				myObject3D = Object3D.mergeAll(Loader.loadASC(mActivity.getModel3D(nameObject), 1f, false));
+				myObject3D = Object3D.mergeAll(Loader.loadASC(new FileInputStream(outputFolderName), 1f, false));
 
 			} else {
 				isBones = true;
 				masterObject3DAnimated = BonesIO
-						.loadGroup(mActivity.getApplicationContext().getAssets().open(nameObject));
+						.loadGroup(new FileInputStream(outputFolderName));
 				masterObject3DAnimated.setSkeletonPose(new SkeletonPose(masterObject3DAnimated.get(0).getSkeleton()));
 				masterObject3DAnimated.getRoot().translate(world.getCamera().getPosition());
 				myObject3D = masterObject3DAnimated.getRoot();
@@ -643,7 +598,10 @@ public class JPCT3DObject implements GLSurfaceView.Renderer, View.OnTouchListene
 				}
 
 				if (animationActivated) {
+					Log.v("CONTROL","1");
 					createMeshKeyFrames();
+					Log.v("CONTROL","2");
+
 				}
 
 			}
@@ -651,7 +609,7 @@ public class JPCT3DObject implements GLSurfaceView.Renderer, View.OnTouchListene
 				if (isMd2 && animationActivated) {
 					myObject3D.strip();
 					myObject3D.build();
-				
+
 				}
 				if (texturePath != null) {
 					//myObject3D.setTexture(texturePath);
@@ -660,16 +618,19 @@ public class JPCT3DObject implements GLSurfaceView.Renderer, View.OnTouchListene
 				world.addObject(myObject3D);
 				bb = myObject3D.getMesh().getBoundingBox();
 			} else {
-				if (texturePath != null) {
+				if (texturesList != null) {
 					for (Animated3D a : masterObject3DAnimated) {
 
 						String nameObjectText = a.getName();
 
-						for (String textName : texturesList) {
+						Log.v("CONTROL","3");
+						for (File textureFile : texturesList) {
+
+							String textName=textureFile.getName();
 							Log.v("NOMBRE OBJETO", nameObjectText);
 							Log.v("NOMBRE TEXTURA", textName);
-							//divide el nombre de la textura de su extension textura.jpg=> textura
-							String textNamee[] = textName.split("\\.");
+
+							String textNamee[]=textName.split("\\.");
 
 							if (nameObjectText.toLowerCase().contains(textNamee[0].toLowerCase())) {
 
@@ -806,6 +767,7 @@ public class JPCT3DObject implements GLSurfaceView.Renderer, View.OnTouchListene
 	@Override
 	public void onSurfaceChanged(GL10 gl, int width, int height) {
 
+		Log.v("ENTRANDO_SURFACE","ENTRADO");
 		if (width > height) {
 			calcularDimensionBotonesRelativaPantalla(width, 16);
 		} else {
@@ -813,26 +775,27 @@ public class JPCT3DObject implements GLSurfaceView.Renderer, View.OnTouchListene
 		}
 
 		try {
-			loadTextureButtons("play.png");
-			loadTextureButtons("pause.png");
-			loadTextureButtons("rewind.png");
-			loadTextureButtons("forward.png");
+			loadTextureButtons();
+			/*loadTextureButtonsOld("play.png");
+			loadTextureButtonsOld("pause.png");
+			loadTextureButtonsOld("rewind.png");
+			loadTextureButtonsOld("forward.png");
 
-			loadTextureButtons("playOFF.png");
-			loadTextureButtons("pauseOFF.png");
-			loadTextureButtons("rewindOFF.png");
-			loadTextureButtons("forwardOFF.png");
+			loadTextureButtonsOld("playoff.png");
+			loadTextureButtonsOld("pauseoff.png");
+			loadTextureButtonsOld("rewindoff.png");
+			loadTextureButtonsOld("forwardoff.png");
 
-			loadTextureButtons("menuOFF.png");
-			loadTextureButtons("menuON.png");
-			loadTextureButtons("moveOFF.png");
-			loadTextureButtons("moveON.png");
-			loadTextureButtons("rotateOFF.png");
-			loadTextureButtons("rotateON.png");
-			loadTextureButtons("scaleON.png");
-			loadTextureButtons("scaleOFF.png");
-			loadTextureButtons("back.png");
-			loadTextureButtons("reset.png");
+			loadTextureButtonsOld("menuoff.png");
+			loadTextureButtonsOld("menuon.png");
+			loadTextureButtonsOld("moveoff.png");
+			loadTextureButtonsOld("moveon.png");
+			loadTextureButtonsOld("rotateon.png");
+			loadTextureButtonsOld("rotateon.png");
+			loadTextureButtonsOld("scaleon.png");
+			loadTextureButtonsOld("scaleoff.png");
+			loadTextureButtonsOld("back.png");
+			loadTextureButtonsOld("reset.png");*/
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -896,28 +859,6 @@ public class JPCT3DObject implements GLSurfaceView.Renderer, View.OnTouchListene
 			if(isBones){
 			animateObjects();
 			}
-			else
-			{
-				//ESTO FALLA
-				/*Log.v("SECUENCIA", object3D.getAnimationSequence().getName(animationSecuence)+"");
-				object3D.animate(anim,animationSecuence);
-				 anim += 0.1;
-		            if (anim >= 1)
-		                anim = 0;*/
-				
-			}
-
-			/*
-			 * int ticks = ticker.getTicks(); if (ticks > 0) { index += 0.016f *
-			 * ticks; if (index > 1){ index -= 1;}
-			 * 
-			 * //Object3D object =
-			 * getWorldForVO(vo.getId()).getObjectByName(vo.getId());
-			 * //object.animate(index, vo.getAnimationSecuence());
-			 * object3D.animate(index,animationSecuence);
-			 * 
-			 * }
-			 */
 
 		}
 
@@ -939,84 +880,84 @@ public class JPCT3DObject implements GLSurfaceView.Renderer, View.OnTouchListene
 	public void paintButtonsScene(FrameBuffer fb) {
 
 		if (animationActivated) {
-			fb.blit(TextureManager.getInstance().getTexture("forwardOFF.png"), 0, 0, (fb.getWidth() / 2 + dimension),
+			fb.blit(TextureManager.getInstance().getTexture("forwardoff"), 0, 0, (fb.getWidth() / 2 + dimension),
 					fb.getHeight() - dimension, dimension, dimension, FrameBuffer.OPAQUE_BLITTING);
-			fb.blit(TextureManager.getInstance().getTexture("rewindOFF.png"), 0, 0,
+			fb.blit(TextureManager.getInstance().getTexture("rewindoff"), 0, 0,
 					(fb.getWidth() / 2) - (dimension * 2), fb.getHeight() - dimension, dimension, dimension,
 					FrameBuffer.OPAQUE_BLITTING);
 
 			if (pauseAnimation) {
-				fb.blit(TextureManager.getInstance().getTexture("pause.png"), 0, 0, (fb.getWidth() / 2),
+				fb.blit(TextureManager.getInstance().getTexture("pause"), 0, 0, (fb.getWidth() / 2),
 						fb.getHeight() - dimension, dimension, dimension, FrameBuffer.OPAQUE_BLITTING);
-				fb.blit(TextureManager.getInstance().getTexture("playOFF.png"), 0, 0, (fb.getWidth() / 2) - dimension,
+				fb.blit(TextureManager.getInstance().getTexture("playoff"), 0, 0, (fb.getWidth() / 2) - dimension,
 						fb.getHeight() - dimension, dimension, dimension, FrameBuffer.OPAQUE_BLITTING);
 
 			} else {
-				fb.blit(TextureManager.getInstance().getTexture("pauseOFF.png"), 0, 0, (fb.getWidth() / 2),
+				fb.blit(TextureManager.getInstance().getTexture("pauseoff"), 0, 0, (fb.getWidth() / 2),
 						fb.getHeight() - dimension, dimension, dimension, FrameBuffer.OPAQUE_BLITTING);
 
 			}
 			if (playAnimation) {
-				fb.blit(TextureManager.getInstance().getTexture("play.png"), 0, 0, (fb.getWidth() / 2) - dimension,
+				fb.blit(TextureManager.getInstance().getTexture("play"), 0, 0, (fb.getWidth() / 2) - dimension,
 						fb.getHeight() - dimension, dimension, dimension, FrameBuffer.OPAQUE_BLITTING);
-				fb.blit(TextureManager.getInstance().getTexture("pauseOFF.png"), 0, 0, (fb.getWidth() / 2),
+				fb.blit(TextureManager.getInstance().getTexture("pauseoff"), 0, 0, (fb.getWidth() / 2),
 						fb.getHeight() - dimension, dimension, dimension, FrameBuffer.OPAQUE_BLITTING);
 
 			} else {
-				fb.blit(TextureManager.getInstance().getTexture("playOFF.png"), 0, 0, (fb.getWidth() / 2) - dimension,
+				fb.blit(TextureManager.getInstance().getTexture("playoff"), 0, 0, (fb.getWidth() / 2) - dimension,
 						fb.getHeight() - dimension, dimension, dimension, FrameBuffer.OPAQUE_BLITTING);
 
 			}
 
 		}
 		if (!menuActivated) {
-			fb.blit(TextureManager.getInstance().getTexture("menuOFF.png"), 0, 0, 0, 0, dimension, dimension,
+			fb.blit(TextureManager.getInstance().getTexture("menuoff"), 0, 0, 0, 0, dimension, dimension,
 					FrameBuffer.OPAQUE_BLITTING);
 		} else {
-			fb.blit(TextureManager.getInstance().getTexture("menuON.png"), 0, 0, 0, 0, dimension, dimension,
+			fb.blit(TextureManager.getInstance().getTexture("menuon"), 0, 0, 0, 0, dimension, dimension,
 					FrameBuffer.OPAQUE_BLITTING);
-			fb.blit(TextureManager.getInstance().getTexture("reset.png"), 0, 0, 0, (dimension * 4), dimension,
+			fb.blit(TextureManager.getInstance().getTexture("reset"), 0, 0, 0, (dimension * 4), dimension,
 					dimension, FrameBuffer.OPAQUE_BLITTING);
-			fb.blit(TextureManager.getInstance().getTexture("back.png"), 0, 0, 0, (dimension * 5), dimension, dimension,
+			fb.blit(TextureManager.getInstance().getTexture("back"), 0, 0, 0, (dimension * 5), dimension, dimension,
 					FrameBuffer.OPAQUE_BLITTING);
 
 			// MOVE
 			if (!moveActivated) {
-				fb.blit(TextureManager.getInstance().getTexture("moveOFF.png"), 0, 0, 0, dimension, dimension,
+				fb.blit(TextureManager.getInstance().getTexture("moveoff"), 0, 0, 0, dimension, dimension,
 						dimension, FrameBuffer.OPAQUE_BLITTING);
 			} else {
-				fb.blit(TextureManager.getInstance().getTexture("moveON.png"), 0, 0, 0, dimension, dimension, dimension,
+				fb.blit(TextureManager.getInstance().getTexture("moveon"), 0, 0, 0, dimension, dimension, dimension,
 						FrameBuffer.OPAQUE_BLITTING);
 
-				fb.blit(TextureManager.getInstance().getTexture("rotateOFF.png"), 0, 0, 0, (dimension * 2), dimension,
+				fb.blit(TextureManager.getInstance().getTexture("rotateoff"), 0, 0, 0, (dimension * 2), dimension,
 						dimension, FrameBuffer.OPAQUE_BLITTING);
-				fb.blit(TextureManager.getInstance().getTexture("scaleOFF.png"), 0, 0, 0, (dimension * 3), dimension,
+				fb.blit(TextureManager.getInstance().getTexture("scaleoff"), 0, 0, 0, (dimension * 3), dimension,
 						dimension, FrameBuffer.OPAQUE_BLITTING);
 			}
 			// ROTATE
 			if (!rotateActivated) {
-				fb.blit(TextureManager.getInstance().getTexture("rotateOFF.png"), 0, 0, 0, (dimension * 2), dimension,
+				fb.blit(TextureManager.getInstance().getTexture("rotateoff"), 0, 0, 0, (dimension * 2), dimension,
 						dimension, FrameBuffer.OPAQUE_BLITTING);
 			} else {
-				fb.blit(TextureManager.getInstance().getTexture("rotateON.png"), 0, 0, 0, (dimension * 2), dimension,
+				fb.blit(TextureManager.getInstance().getTexture("rotateon"), 0, 0, 0, (dimension * 2), dimension,
 						dimension, FrameBuffer.OPAQUE_BLITTING);
 
-				fb.blit(TextureManager.getInstance().getTexture("moveOFF.png"), 0, 0, 0, dimension, dimension,
+				fb.blit(TextureManager.getInstance().getTexture("moveoff"), 0, 0, 0, dimension, dimension,
 						dimension, FrameBuffer.OPAQUE_BLITTING);
-				fb.blit(TextureManager.getInstance().getTexture("scaleOFF.png"), 0, 0, 0, (dimension * 3), dimension,
+				fb.blit(TextureManager.getInstance().getTexture("scaleoff"), 0, 0, 0, (dimension * 3), dimension,
 						dimension, FrameBuffer.OPAQUE_BLITTING);
 			}
 			// ZOOM
 			if (!zoomActivated) {
-				fb.blit(TextureManager.getInstance().getTexture("scaleOFF.png"), 0, 0, 0, (dimension * 3), dimension,
+				fb.blit(TextureManager.getInstance().getTexture("scaleoff"), 0, 0, 0, (dimension * 3), dimension,
 						dimension, FrameBuffer.OPAQUE_BLITTING);
 			} else {
-				fb.blit(TextureManager.getInstance().getTexture("scaleON.png"), 0, 0, 0, (dimension * 3), dimension,
+				fb.blit(TextureManager.getInstance().getTexture("scaleon"), 0, 0, 0, (dimension * 3), dimension,
 						dimension, FrameBuffer.OPAQUE_BLITTING);
 
-				fb.blit(TextureManager.getInstance().getTexture("moveOFF.png"), 0, 0, 0, dimension, dimension,
+				fb.blit(TextureManager.getInstance().getTexture("moveoff"), 0, 0, 0, dimension, dimension,
 						dimension, FrameBuffer.OPAQUE_BLITTING);
-				fb.blit(TextureManager.getInstance().getTexture("rotateOFF.png"), 0, 0, 0, (dimension * 2), dimension,
+				fb.blit(TextureManager.getInstance().getTexture("rotateoff"), 0, 0, 0, (dimension * 2), dimension,
 						dimension, FrameBuffer.OPAQUE_BLITTING);
 			}
 		}
@@ -1157,20 +1098,7 @@ public class JPCT3DObject implements GLSurfaceView.Renderer, View.OnTouchListene
 			if (moveActivated) {
 
 				moveCamera(dx, dy);
-				/*
-				 * if (followFingerCollision) {
-				 * 
-				 * 
-				 * //moveObjectBy((int) event.getX(), (int) event.getY());
-				 * 
-				 * 
-				 * 
-				 * } /*else {
-				 * 
-				 * moveLightBy((int) event.getX(), (int) event.getY());
-				 * 
-				 * }
-				 */
+
 
 			}
 			return true;

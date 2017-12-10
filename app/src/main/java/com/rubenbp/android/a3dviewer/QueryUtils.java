@@ -64,6 +64,7 @@ public class QueryUtils {
         try{
 
 
+
             if(!outputFolder.exists()){
                 outputFolder.mkdir();
             }

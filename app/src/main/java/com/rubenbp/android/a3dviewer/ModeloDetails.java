@@ -28,6 +28,8 @@ import java.io.IOException;
 public class ModeloDetails extends AppCompatActivity {
 
     private String URL="http://192.168.0.104/rest_service/get_data?id=";
+    //private String URL="http://10.143.155.77/rest_service/get_data?id=";
+
     private String idModel="";
     private TextView nombreModeloTextView;
     private TextView extensionModeloTextView;
@@ -65,6 +67,9 @@ public class ModeloDetails extends AppCompatActivity {
         protected void onPostExecute(File file) {
 
             modeloTempFileDir=file;
+            visor3DButton.setEnabled(true);
+            visorRVButton.setEnabled(true);
+            descargarButton.setEnabled(true);
         }
     }
 
@@ -98,23 +103,28 @@ public class ModeloDetails extends AppCompatActivity {
             visorRVButton=(Button)findViewById(R.id.detalle_button_realidad_virtual);
             descargarButton=(Button)findViewById(R.id.detalle_button_descargar);
 
+            visor3DButton.setEnabled(false);
+            visorRVButton.setEnabled(false);
+            descargarButton.setEnabled(false);
+
 
             Intent intent = getIntent();
 
             String id= intent.getStringExtra("id");
             idModel=id;
             String nombreModelo=intent.getStringExtra("nombre");
+            Log.v("NOMBREmODELO",nombreModelo);
             String extensionModelo=intent.getStringExtra("extension");
             String tamannoModelo=intent.getStringExtra("tamanno");
 
-            nombreModeloTextView.setText("Nombre: "+nombreModelo);
-            extensionModeloTextView.setText("Extension: "+extensionModelo);
-            tamannoModeloTextView.setText("Tamaño: "+tamannoModelo);
+            nombreModeloTextView.setText(getResources().getString(R.string.nombre_detalle)+" "+nombreModelo);
+            extensionModeloTextView.setText(getResources().getString(R.string.extension_detalle)+" "+extensionModelo);
+            tamannoModeloTextView.setText(getResources().getString(R.string.tamanno_detalle)+" "+tamannoModelo);
             modeloAbsolutFileDir= new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), "3DViewer" + File.separator + "modelos" + File.separator + idModel);
 
 
             URL=URL+idModel;
-            ModeloFileAsyncTask modeloFileAsyncTask= new ModeloFileAsyncTask();
+            final ModeloFileAsyncTask modeloFileAsyncTask= new ModeloFileAsyncTask();
             modeloFileAsyncTask.execute(URL);
 
 
@@ -124,6 +134,7 @@ public class ModeloDetails extends AppCompatActivity {
                 public void onClick(View v) {
 
                     Intent intent= new Intent(getApplicationContext(), JPCTActivity.class);
+                    intent.putExtra("hola",modeloTempFileDir);
                     startActivity(intent);
                 }
             });
@@ -152,6 +163,7 @@ public class ModeloDetails extends AppCompatActivity {
                         {
                             try {
                                 //antes de poder borrar un directorio debo borrar su contenido
+                                // TODO tengo un bug que no me deja borrar una carpeta cuando hay otra dentro
                                 FileUtils.cleanDirectory(modeloAbsolutFileDir);
                                 modeloAbsolutFileDir.delete();
                             } catch (IOException e) {

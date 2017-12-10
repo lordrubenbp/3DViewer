@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">3DViewer</string>
+    <string name="descargar03D" translatable="false">Download object3D</string>
+    <string name="mis03D">My objects3D</string>
+    <string name="subir03D">Upload objects3D</string>
+    <string name="animados">Animated</string>
+    <string name="no_animados">No animated</string>
+    <string name="error_conexion">It was not possible to connect to the server</string>
+    <string name="detalle_modelo">Details</string>
+    <string name="descargar_button">Download</string>
+    <string name="borrar_button">Erase</string>
+    <string name="nombre_detalle">Name:</string>
+    <string name="extension_detalle">Extension:</string>
+    <string name="tamanno_detalle">Size:</string>
+    <string name="visor3d_button">see in viewer3D</string>
+    <string name="visorVR_button">see in virtual reality</string>
+
+</resources>

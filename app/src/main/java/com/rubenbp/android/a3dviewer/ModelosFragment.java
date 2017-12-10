@@ -1,10 +1,14 @@
 package com.rubenbp.android.a3dviewer;
 
+import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
-import android.os.AsyncTask;
+import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,11 +17,9 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.apache.commons.io.FileUtils;
 
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,60 +27,82 @@ import java.util.List;
  * Created by ruben on 22/11/2017.
  */
 
-public  class ModelosFragment extends Fragment {
+public  class ModelosFragment extends Fragment implements LoaderManager.LoaderCallbacks<List<Modelo>>,
+        SharedPreferences.OnSharedPreferenceChangeListener  {
 
+    private static final int MODELO_LOADER_ID =1 ;
     //private  String URL="http://192.168.0.104/rest_service/get_all_modelos_animados";
     private String URL="";
     private ProgressBar mProgressBar;
     private GridView mGridView;
     private TextView mErrorMessage;
-    private ModeloAsyncTask task;
 
 
     private ModeloAdapter mAdapter;
-    private class ModeloAsyncTask extends AsyncTask<String, Void, List<Modelo>> {
 
-        @Override
-        protected List<Modelo> doInBackground(String... urls) {
-            // Don't perform the request if there are no URLs, or the first URL is null.
-            if (urls.length < 1 || urls[0] == null) {
-                return null;
-            }
+    @Override
+    public android.support.v4.content.Loader<List<Modelo>> onCreateLoader(int id, Bundle args) {
 
 
-                List<Modelo> result = QueryUtils.fetchModeloData(urls[0]);
 
-            return result;
+        mProgressBar.setVisibility(View.VISIBLE);
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this.getContext());
+
+        return new ModeloLoader(this.getContext(),URL);
+    }
+
+    @Override
+    public void onLoadFinished(android.support.v4.content.Loader<List<Modelo>> loader, List<Modelo> modelos) {
+
+        // Hide loading indicator because the data has been loaded
+
+        mProgressBar.setVisibility(View.GONE);
+
+        // Set empty state text to display "No earthquakes found."
+
+
+        // Clear the adapter of previous earthquake data
+        mAdapter.clear();
+
+        // If there is a valid list of {@link Earthquake}s, then add them to the adapter's
+        // data set. This will trigger the ListView to update.
+        if (modelos != null && !modelos.isEmpty()) {
+            mAdapter.addAll(modelos);
         }
-
-        @Override
-        protected void onPreExecute() {
-
-            mProgressBar.setVisibility(View.VISIBLE);
-            mErrorMessage.setVisibility(View.INVISIBLE);
-        }
-
-        @Override
-        protected void onPostExecute(List<Modelo> data) {
-            // Clear the adapter of previous earthquake data
-            // TODO Falta el ModeloAdapter que se ocupa de coger los datos extraidos y colocarlos en el layout
-
-            if(data==null)
+        else
             {
-                Log.v("CONEXION","todo mallll");
+                mErrorMessage.setText("sin modelos disponibles");
                 mErrorMessage.setVisibility(View.VISIBLE);
             }
-            mProgressBar.setVisibility(View.INVISIBLE);
-            //mGridView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onLoaderReset(android.support.v4.content.Loader<List<Modelo>> loader) {
+
+        mAdapter.clear();
+    }
+
+
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+
+
+            // Clear the ListView as a new query will be kicked off
             mAdapter.clear();
 
-            // If there is a valid list of {@link Earthquake}s, then add them to the adapter's
-            // data set. This will trigger the ListView to update.
-            if (data != null && !data.isEmpty()) {
-                mAdapter.addAll(data);
-            }
-        }
+            // Hide the empty state text view as the loading indicator will be displayed
+            mErrorMessage.setVisibility(View.GONE);
+
+            // Show the loading indicator while new data is being fetched
+
+            mProgressBar.setVisibility(View.VISIBLE);
+
+            // Restart the loader to requery the USGS as the query settings have been updated
+            getLoaderManager().restartLoader(MODELO_LOADER_ID, null, this);
+
     }
+
 
     public ModelosFragment() {
         // Required empty public constructor
@@ -93,8 +117,8 @@ public  class ModelosFragment extends Fragment {
         mProgressBar = (ProgressBar) rootView.findViewById(R.id.progress_bar);
         mErrorMessage=(TextView)rootView.findViewById(R.id.error_message);
 
-        task = new ModeloAsyncTask();
-        task.execute(URL);
+        //task = new ModeloAsyncTask();
+        //task.execute(URL);
 
         // Create a new adapter that takes an empty list of earthquakes as input
         mAdapter = new ModeloAdapter(this.getContext(), new ArrayList<Modelo>());
@@ -102,6 +126,11 @@ public  class ModelosFragment extends Fragment {
         // Set the adapter on the {@link ListView}
         // so the list can be populated in the user interface
         mGridView.setAdapter(mAdapter);
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.getContext());
+        // And register to be notified of preference changes
+        // So we know when the user has adjusted the query settings
+        prefs.registerOnSharedPreferenceChangeListener(this);
 
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -118,6 +147,7 @@ public  class ModelosFragment extends Fragment {
 
                 Intent intent= new Intent(getActivity(),ModeloDetails.class);
                 intent.putExtra("id",currentModelo.getId()+"");
+                Log.v("NOMBRE",currentModelo.getNombre());
                 intent.putExtra("nombre",currentModelo.getNombre());
                 long tamanno= Long.parseLong(currentModelo.getTamanno());
                 intent.putExtra("tamanno", FileUtils.byteCountToDisplaySize(tamanno));
@@ -132,10 +162,38 @@ public  class ModelosFragment extends Fragment {
             }
         });
 
+        // Get a reference to the ConnectivityManager to check state of network connectivity
+        ConnectivityManager connMgr = (ConnectivityManager)
+                this.getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        // Get details on the currently active default data network
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+
+        // If there is a network connection, fetch data
+        if (networkInfo != null && networkInfo.isConnected()) {
+            // Get a reference to the LoaderManager, in order to interact with loaders.
+            LoaderManager loaderManager = getLoaderManager();
+
+            // Initialize the loader. Pass in the int ID constant defined above and pass in null for
+            // the bundle. Pass in this activity for the LoaderCallbacks parameter (which is valid
+            // because this activity implements the LoaderCallbacks interface).
+            loaderManager.initLoader(MODELO_LOADER_ID, null, this);
+        } else {
+            // Otherwise, display error
+            // First, hide loading indicator so error message will be visible
+
+            mProgressBar.setVisibility(View.GONE);
+
+            // Update empty state with no connection error message
+            mErrorMessage.setVisibility(View.VISIBLE);
+        }
+
         return rootView;
+
+
     }
 
-    //evento que se lanza cuando el fragment no es visible
+   /* //evento que se lanza cuando el fragment no es visible
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
@@ -150,7 +208,7 @@ public  class ModelosFragment extends Fragment {
 
             }
         }
-    }
+    }*/
 
     public void setURL(String URL)
     {

@@ -27,33 +27,42 @@
         android:paddingTop="20dp"
         android:paddingLeft="20dp">
 
-        <TextView
+        <android.support.v7.widget.AppCompatTextView
             android:id="@+id/detalle_modelo_nombre"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
             android:gravity="center_vertical"
             android:text="Nombre: silla_salon"
+            app:autoSizeMaxTextSize="20sp"
+            app:autoSizeMinTextSize="5sp"
+            app:autoSizeTextType="uniform"
 
-            android:textSize="30sp" />
+           />
 
-        <TextView
+        <android.support.v7.widget.AppCompatTextView
             android:id="@+id/detalle_modelo_extension"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:text="Extension: .obj"
             android:gravity="center_vertical"
-            android:textSize="25sp" />
+            app:autoSizeMaxTextSize="20sp"
+            app:autoSizeMinTextSize="5sp"
+            app:autoSizeTextType="uniform"
+            android:text="Extension: .obj"
+            />
 
-        <TextView
+        <android.support.v7.widget.AppCompatTextView
             android:id="@+id/detalle_modelo_tamaño"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:text="Tamaño: 40MB"
+            app:autoSizeMaxTextSize="20sp"
+            app:autoSizeMinTextSize="5sp"
+            app:autoSizeTextType="uniform"
             android:gravity="center_vertical"
-            android:textSize="25sp" />
+            android:text="Tamaño: 40MB"
+             />
 
     </LinearLayout>
 
@@ -65,7 +74,7 @@
         android:layout_weight="1"
         android:background="@color/grey_blue_button"
         android:elevation="0dp"
-        android:text="Ver en visor3D"
+        android:text="@string/visor3d_button"
         android:textAlignment="center"
         android:textSize="15sp"
         tools:background="@color/grey_blue_button" />
@@ -77,7 +86,7 @@
         android:layout_marginTop="10dp"
         android:layout_weight="1"
         android:background="@color/grey_blue_button"
-        android:text="Ver en realidad virtual"
+        android:text="@string/visorVR_button"
         android:textSize="15sp" />
 
     <Button
@@ -87,10 +96,9 @@
         android:layout_marginTop="10dp"
         android:layout_weight="1"
         android:background="@color/green_button"
-        android:text="Descargar"
+        android:text="@string/descargar_button"
         android:textColor="@color/white"
-        android:textSize="20sp"
-        />
+        android:textSize="20sp" />
 
 
 </LinearLayout>

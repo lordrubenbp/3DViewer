@@ -13,6 +13,11 @@ public class CategoryAdapter extends FragmentPagerAdapter {
     private  String urlAnimados="http://192.168.0.104/rest_service/get_all_modelos_animados";
     private String urlNoAnimados="http://192.168.0.104/rest_service/get_all_modelos_noanimados";
 
+    //private String urlNoAnimados="http://10.143.155.77/rest_service/get_all_modelos_noanimados";
+    //private  String urlAnimados="http://10.143.155.77/rest_service/get_all_modelos_animados";
+
+
+
 
     /**
      * Create a new {@link CategoryAdapter} object.

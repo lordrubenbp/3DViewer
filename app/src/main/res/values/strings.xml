@@ -9,4 +9,10 @@
     <string name="detalle_modelo">Detalle</string>
     <string name="descargar_button">Descargar</string>
     <string name="borrar_button">Borrar</string>
+    <string name="nombre_detalle">Nombre:</string>
+    <string name="extension_detalle">Extensión:</string>
+    <string name="tamanno_detalle">Tamaño:</string>
+    <string name="visor3d_button">Ver en visor3D</string>
+    <string name="visorVR_button">Ver en realidad virtual</string>
+
 </resources>
