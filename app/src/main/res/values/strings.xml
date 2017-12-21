@@ -27,5 +27,10 @@
     <string name="cancel">Cancelar</string>
     <string name="editor_delete_pet_failed">Error, modelo no borrado</string>
     <string name="editor_delete_pet_successful">Modelo borrado</string>
+    <string name="subir_archivo">seleccionar</string>
+    <string name="todo_correcto">Todo correcto</string>
+    <string name="error_insercion">Error al insertar</string>
+    <string name="nada_insertado">nada insertado</string>
+    <string name="insercion_correcta">insercion correcta</string>
 
 </resources>

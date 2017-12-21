@@ -47,7 +47,8 @@ public class QueryUtils {
 
 
 
-    public static File unZipIt(File zipFile){
+    public static File unZipIt(File zipFile,Context context){
+
 
         byte[] buffer = new byte[1024];
 
@@ -126,7 +127,7 @@ public class QueryUtils {
             Log.e(LOG_TAG, "Problem making the HTTP request.", e);
         }
 
-        dirTempFile=unZipIt(file);
+        dirTempFile=unZipIt(file,context);
 
         return dirTempFile;
 

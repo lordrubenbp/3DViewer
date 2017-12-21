@@ -10,6 +10,10 @@ import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Environment;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -19,7 +23,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,6 +38,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import com.rubenbp.android.a3dviewer.SQLite.ModelosContract.ModelEntry;
+import com.rubenbp.android.a3dviewer.jpct.JPCTActivity;
 
 
 public class SubirModeloActivity extends AppCompatActivity implements
@@ -54,25 +61,71 @@ public class SubirModeloActivity extends AppCompatActivity implements
     EditText extensionEditText;
     RadioButton animadoRButton;
     RadioButton noanimadoRButton;
+    ImageView imagenImageView;
     String animado="animado";
+    String modelPath="";
 
-    File file = null;
-    File fileTemp=null;
+    File modeloFileTempZip =null;
+    File modeloFileTempUnzip=null;
+    private Button visor3DButton;
+    private File modeloAbsolutFileDir;
+
+    private class ModeloFileAsyncTask extends AsyncTask<String, Void, File> {
+
+        @RequiresApi(api = Build.VERSION_CODES.M)
+        @Override
+        protected File doInBackground(String... urls) {
+
+            String result="";
+            // Don't perform the request if there are no URLs, or the first URL is null.
+            if (urls.length < 1 || urls[0] == null) {
+                return null;
+            }
+
+            File asyncFileTemp= new File(urls[0]);
+
+            return QueryUtils.unZipIt(asyncFileTemp,getApplicationContext());
+
+
+        }
+        @Override
+        protected void onPostExecute(File file) {
+
+            modeloFileTempUnzip=file;
+            visor3DButton.setEnabled(true);
+            //visorRVButton.setEnabled(true);
+            //descargarButton.setEnabled(true);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_subir_modelo);
+        setContentView(R.layout.activity_modelo_upload);
 
 
         Intent intent = getIntent();
         mCurrentModelUri = intent.getData();
+        visor3DButton=(Button)findViewById(R.id.upload_button_visor3D);
+        // TODO cuando volteo da un fallo y cierra, debo tener en el layout land, los mismos nombres de id
+        // TODO en el mainActivity, en la vista land hay que activar el onclick
+        imagenImageView=(ImageView)findViewById(R.id.subir_imagen);
 
         // If the intent DOES NOT contain a pet content URI, then we know that we are
         // creating a new pet.
         if (mCurrentModelUri == null) {
             // This is a new pet, so change the app bar to say "Add a Pet"
             setTitle(getString(R.string.subir_modelo));
+            visor3DButton.setEnabled(false);
+            visor3DButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    Intent intent= new Intent(getApplicationContext(), JPCTActivity.class);
+                    intent.putExtra("hola",modeloFileTempUnzip);
+                    startActivity(intent);
+                }
+            });
 
             // Invalidate the options menu, so the "Delete" menu option can be hidden.
             // (It doesn't make sense to delete a pet that hasn't been created yet.)
@@ -80,6 +133,8 @@ public class SubirModeloActivity extends AppCompatActivity implements
         } else {
             // Otherwise this is an existing pet, so change app bar to say "Edit Pet"
             setTitle(getString(R.string.editar_modelo));
+
+            imagenImageView.setBackgroundColor(getResources().getColor(R.color.green_button));
 
             // Initialize a loader to read the pet data from the database
             // and display the current values in the editor
@@ -92,9 +147,13 @@ public class SubirModeloActivity extends AppCompatActivity implements
         animadoRButton=(RadioButton)findViewById(R.id.radio_animado);
         noanimadoRButton=(RadioButton)findViewById(R.id.radio_noanimado);
 
+        //Cuando pulso accede a el archivo temporal del modelo y se lo manda a el activity
+
+
+
     }
 
-    public void onClickUpload(View view)
+    public void onClickUploadFile(View view)
     {
 
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -113,6 +172,7 @@ public class SubirModeloActivity extends AppCompatActivity implements
 
         if (requestCode == READ_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
 
+            imagenImageView.setBackgroundColor(getResources().getColor(R.color.green_button));
             Uri uri = null;
             if (resultData != null) {
                 uri = resultData.getData();
@@ -121,16 +181,20 @@ public class SubirModeloActivity extends AppCompatActivity implements
                 InputStream inputStream=null;
                 try {
 
-                    fileTemp= new File(getApplicationContext().getCacheDir().getAbsoluteFile(),"modelos_subidos"+ File.separator +"temp.zip" );
-                    fileTemp.deleteOnExit();
+                    modeloFileTempZip = new File(getApplicationContext().getCacheDir().getAbsoluteFile(),"modelos_subidos"+ File.separator +"temp.zip" );
+                    //modelPath= modeloFileTempZip.getAbsolutePath();
+
+                    //modeloFileTempZip.deleteOnExit();
                      //file = new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), "3DViewer" + File.separator + "modelos" + File.separator + "modelos_subidos"+ File.separator +"archivo.zip");
                     inputStream = getContentResolver().openInputStream(uri);
-                    FileUtils.copyInputStreamToFile(inputStream, fileTemp);
+                    FileUtils.copyInputStreamToFile(inputStream, modeloFileTempZip);
+                    final ModeloFileAsyncTask modeloFileAsyncTask= new ModeloFileAsyncTask();
+                    modeloFileAsyncTask.execute(modeloFileTempZip.getAbsolutePath());
                    /* if(file.exists())
                     {
                         file.delete();
                     }*/
-                   // FileUtils.moveFile(fileTemp,file);
+                   // FileUtils.moveFile(modeloFileTempZip,file);
 
 
                 } catch (FileNotFoundException e) {
@@ -139,11 +203,11 @@ public class SubirModeloActivity extends AppCompatActivity implements
                     e.printStackTrace();
                 }
 
-                if(fileTemp.exists())
+                if(modeloFileTempZip.exists())
                 {
 
-                    tamannioTextView.setText(FileUtils.byteCountToDisplaySize(FileUtils.sizeOf(fileTemp)));
-                    modelPathTextView.setText(fileTemp.getAbsolutePath());
+                    tamannioTextView.setText(FileUtils.byteCountToDisplaySize(FileUtils.sizeOf(modeloFileTempZip)));
+                    //modelPathTextView.setText(modeloFileTempZip.getAbsolutePath());
 
                 }
 
@@ -223,7 +287,18 @@ public class SubirModeloActivity extends AppCompatActivity implements
             nombreEditText.setText(nameModel);
             tamannioTextView.setText(sizeModel);
             extensionEditText.setText(extensionModel);
-            modelPathTextView.setText(pathModel);
+           // modelPathTextView.setText(pathModel);
+            modelPath=pathModel;
+            modeloAbsolutFileDir= new File(modelPath);
+            visor3DButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    Intent intent= new Intent(getApplicationContext(), JPCTActivity.class);
+                    intent.putExtra("hola",modeloAbsolutFileDir);
+                    startActivity(intent);
+                }
+            });
             animado=animadoModel;
 
 
@@ -247,17 +322,23 @@ public class SubirModeloActivity extends AppCompatActivity implements
         nombreEditText.setText("");
         extensionEditText.setText("");
         tamannioTextView.setText("");
-        modelPathTextView.setText("");
+       // modelPathTextView.setText("");
         animadoRButton.setChecked(true);
+        modelPath="";
     }
     private void saveModel() {
         // Read from input fields
         // Use trim to eliminate leading or trailing white space
         String nameString = nombreEditText.getText().toString().trim();
+
+
+
         String extensionString = extensionEditText.getText().toString().trim();
         String sizeString = tamannioTextView.getText().toString().trim();
-        String modelPathString = modelPathTextView.getText().toString().trim();
+        String modelPathString =modelPath;
         String animadoString = animado.trim();
+
+
 
         // Check if this is supposed to be a new pet
         // and check if all the fields in the editor are blank
@@ -287,6 +368,13 @@ public class SubirModeloActivity extends AppCompatActivity implements
 
         // Determine if this is a new or existing pet by checking if mCurrentPetUri is null or not
         if (mCurrentModelUri == null) {
+            modeloAbsolutFileDir= new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), "3DViewer" + File.separator + "modelos" + File.separator + "subidos"+ File.separator +nameString);
+            try {
+                FileUtils.copyDirectory(modeloFileTempUnzip, modeloAbsolutFileDir, true);
+                modelPath=modeloAbsolutFileDir.getAbsolutePath();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             // This is a NEW pet, so insert a new pet into the provider,
             // returning the content URI for the new pet.
             Uri newUri = getContentResolver().insert(ModelEntry.CONTENT_URI, values);
@@ -294,11 +382,11 @@ public class SubirModeloActivity extends AppCompatActivity implements
             // Show a toast message depending on whether or not the insertion was successful.
             if (newUri == null) {
                 // If the new content URI is null, then there was an error with insertion.
-                Toast.makeText(this, "CAGADA",
+                Toast.makeText(this, R.string.error_insercion,
                         Toast.LENGTH_SHORT).show();
             } else {
                 // Otherwise, the insertion was successful and we can display a toast.
-                Toast.makeText(this, "TODO CORRECTO",
+                Toast.makeText(this, R.string.todo_correcto,
                         Toast.LENGTH_SHORT).show();
             }
         } else {
@@ -311,11 +399,11 @@ public class SubirModeloActivity extends AppCompatActivity implements
             // Show a toast message depending on whether or not the update was successful.
             if (rowsAffected == 0) {
                 // If no rows were affected, then there was an error with the update.
-                Toast.makeText(this,"NADA INSERTADO",
+                Toast.makeText(this,R.string.nada_insertado,
                         Toast.LENGTH_SHORT).show();
             } else {
                 // Otherwise, the update was successful and we can display a toast.
-                Toast.makeText(this, "INSERTADO PERFECT",
+                Toast.makeText(this, R.string.insercion_correcta,
                         Toast.LENGTH_SHORT).show();
             }
         }

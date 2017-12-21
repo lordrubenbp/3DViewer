@@ -17,13 +17,17 @@
     <string name="visorVR_button">see in virtual reality</string>
     <string name="subir_modelo">Upload Model 3D</string>
     <string name="editar_modelo">Edit Model 3D</string>
-    <string name="action_save">guardar</string>
-    <string name="action_delete">Borrar</string>
-    <string name="unsaved_changes_dialog_msg">¿Descartar los cambios y acabar de editar?</string>
-    <string name="discard">Descartar</string>
-    <string name="delete_dialog_msg">¿Desea Borrar este modelo?</string>
-    <string name="cancel">Cancelar</string>
-    <string name="editor_delete_pet_failed">Error, modelo no borrado</string>
-    <string name="editor_delete_pet_successful">Modelo borrado</string>
+    <string name="action_save">Save</string>
+    <string name="action_delete">Delete</string>
+    <string name="unsaved_changes_dialog_msg">¿Discard changes and quit edit?</string>
+    <string name="discard">Discard</string>
+    <string name="delete_dialog_msg">¿Delete this model?</string>
+    <string name="cancel">Cancel</string>
+    <string name="editor_delete_pet_failed">Error, model dont erase</string>
+    <string name="editor_delete_pet_successful">Model erase</string>
+    <string name="subir_archivo">Select</string>
+    <string name="todo_correcto">All correct</string>
+    <string name="error_insercion">Erro in insert</string>
+    <string name="insercion_correcta">Inserted correctly</string>
 
 </resources>
