@@ -148,10 +148,10 @@ public  class ModelosFragment extends Fragment implements LoaderManager.LoaderCa
                 Intent intent= new Intent(getActivity(),ModeloDetails.class);
                 intent.putExtra("id",currentModelo.getId()+"");
                 Log.v("NOMBRE",currentModelo.getNombre());
-                intent.putExtra("nombre",currentModelo.getNombre());
+                intent.putExtra("nombreEditText",currentModelo.getNombre());
                 long tamanno= Long.parseLong(currentModelo.getTamanno());
                 intent.putExtra("tamanno", FileUtils.byteCountToDisplaySize(tamanno));
-                intent.putExtra("extension",currentModelo.getExtension());
+                intent.putExtra("extensionEditText",currentModelo.getExtension());
 
 
                 startActivity(intent);

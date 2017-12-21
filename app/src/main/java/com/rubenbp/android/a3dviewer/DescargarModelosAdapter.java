@@ -6,7 +6,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
 
-public class CategoryAdapter extends FragmentPagerAdapter {
+public class DescargarModelosAdapter extends FragmentPagerAdapter {
 
     /** Context of the app */
     private Context mContext;
@@ -19,14 +19,15 @@ public class CategoryAdapter extends FragmentPagerAdapter {
 
 
 
+
     /**
-     * Create a new {@link CategoryAdapter} object.
+     * Create a new {@link DescargarModelosAdapter} object.
      *
      * @param context is the context of the app
      * @param fm is the fragment manager that will keep each fragment's state in the adapter
      *           across swipes.
      */
-    public CategoryAdapter(Context context, FragmentManager fm) {
+    public DescargarModelosAdapter(Context context, FragmentManager fm) {
         super(fm);
         mContext = context;
     }

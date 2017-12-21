@@ -15,5 +15,15 @@
     <string name="tamanno_detalle">Size:</string>
     <string name="visor3d_button">see in viewer3D</string>
     <string name="visorVR_button">see in virtual reality</string>
+    <string name="subir_modelo">Upload Model 3D</string>
+    <string name="editar_modelo">Edit Model 3D</string>
+    <string name="action_save">guardar</string>
+    <string name="action_delete">Borrar</string>
+    <string name="unsaved_changes_dialog_msg">¿Descartar los cambios y acabar de editar?</string>
+    <string name="discard">Descartar</string>
+    <string name="delete_dialog_msg">¿Desea Borrar este modelo?</string>
+    <string name="cancel">Cancelar</string>
+    <string name="editor_delete_pet_failed">Error, modelo no borrado</string>
+    <string name="editor_delete_pet_successful">Modelo borrado</string>
 
 </resources>

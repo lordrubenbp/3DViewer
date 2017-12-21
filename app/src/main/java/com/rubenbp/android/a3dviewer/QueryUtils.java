@@ -176,13 +176,13 @@ public class QueryUtils {
 
                 int id= currentModelo.getInt("id");
 
-                String nombre=currentModelo.getString("nombre");
+                String nombre=currentModelo.getString("nombreEditText");
 
                 String tipo=currentModelo.getString("tipo");
 
                 String tamanno=currentModelo.getString("tamaño");
 
-                String extension=currentModelo.getString("extension");
+                String extension=currentModelo.getString("extensionEditText");
 
                 Modelo modelo= new Modelo(id,nombre,tipo,tamanno,extension);
 

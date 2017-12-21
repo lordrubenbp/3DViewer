@@ -28,6 +28,7 @@ import java.io.IOException;
 public class ModeloDetails extends AppCompatActivity {
 
     private String URL="http://192.168.0.104/rest_service/get_data?id=";
+
     //private String URL="http://10.143.155.77/rest_service/get_data?id=";
 
     private String idModel="";
@@ -112,9 +113,9 @@ public class ModeloDetails extends AppCompatActivity {
 
             String id= intent.getStringExtra("id");
             idModel=id;
-            String nombreModelo=intent.getStringExtra("nombre");
+            String nombreModelo=intent.getStringExtra("nombreEditText");
             Log.v("NOMBREmODELO",nombreModelo);
-            String extensionModelo=intent.getStringExtra("extension");
+            String extensionModelo=intent.getStringExtra("extensionEditText");
             String tamannoModelo=intent.getStringExtra("tamanno");
 
             nombreModeloTextView.setText(getResources().getString(R.string.nombre_detalle)+" "+nombreModelo);

@@ -1,30 +1,16 @@
 package com.rubenbp.android.a3dviewer;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Environment;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -189,6 +175,16 @@ public class MainActivity extends AppCompatActivity {
     public void Onclick(View view)
     {
         Intent intent= new Intent(this,ModelosActivity.class);
+        startActivity(intent);
+    }
+    public void OnclickUpload(View view)
+    {
+        Intent intent= new Intent(this,SubirModeloActivity.class);
+        startActivity(intent);
+    }
+    public void OnclickMisModelos(View view)
+    {
+        Intent intent= new Intent(this,MisModelosActivity.class);
         startActivity(intent);
     }
 
