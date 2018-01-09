@@ -1,7 +1,7 @@
 package com.rubenbp.android.a3dviewer;
 
 /**
- * Created by ruben on 22/11/2017.
+ * Clase que representa el objeto Modelo obtenido de la consulta a mi REST API
  */
 
 public class Modelo {

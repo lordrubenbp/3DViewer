@@ -6,7 +6,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -16,23 +15,19 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
 
-
 import com.rubenbp.android.a3dviewer.SQLite.ModelosContract;
 import com.rubenbp.android.a3dviewer.SQLite.ModelosCursorAdapter;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * Created by ruben on 21/12/2017.
+ * Clase que representa a cada fragment que aparece en la pantalla de mis objetos 3D
  */
-
 public class MisModelosFragment  extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
 
 
     private GridView mGridView;
     private ModelosCursorAdapter mAdapter;
     private static final int MODEL_LOADER = 0;
+    //variable que recibo del activity que llama a los fragment y que determina que consulta a la base de datos realizo en este fragment
     private int tipo=0;
 
     public MisModelosFragment()
@@ -40,40 +35,41 @@ public class MisModelosFragment  extends Fragment implements LoaderManager.Loade
 
     }
 
+    /**
+     * Funcion que recibe el tipo de fragment del adapter
+     * @param tipo
+     */
     public void setTipo(int tipo)
     {
         this.tipo=tipo;
     }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.modelos_list, container, false);
 
+        //Layout donde se van a mostrar los diferentes objetos 3D
         mGridView = (GridView) rootView.findViewById(R.id.gridview);
 
-        mAdapter = new ModelosCursorAdapter(this.getContext(),null,tipo);
+        mAdapter = new ModelosCursorAdapter(this.getContext(),null);
 
         mGridView.setAdapter(mAdapter);
 
+        //fuerzo a que se lance el loader adecuado a las bases de datos sqlite
+
         getLoaderManager().initLoader(MODEL_LOADER, null, this);
+
+        //Cada vez que pulso un elemento...
 
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                // Create new intent to go to {@link EditorActivity}
+
                 Intent intent = new Intent(getActivity(), SubirModeloActivity.class);
-
-                // Form the content URI that represents the specific pet that was clicked on,
-                // by appending the "id" (passed as input to this method) onto the
-                // {@link PetEntry#CONTENT_URI}.
-                // For example, the URI would be "content://com.example.android.pets/pets/2"
-                // if the pet with ID 2 was clicked on.
+                //cada vez que pulse alguno de los elementos de la lista, se pasa su enlace correspondiente en la base de datos
                 Uri currentPetUri = ContentUris.withAppendedId(ModelosContract.ModelEntry.CONTENT_URI, id);
-
-                // Set the URI on the data field of the intent
                 intent.setData(currentPetUri);
-
-                // Launch the {@link EditorActivity} to display the data for the current pet.
                 startActivity(intent);
             }
         });
@@ -82,8 +78,7 @@ public class MisModelosFragment  extends Fragment implements LoaderManager.Loade
     }
         @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        // Since the editor shows all pet attributes, define a projection that contains
-        // all columns from the pet table
+      //projection sera donde yo ponga todas aquellas columnas que quiero que se vean afectadas en la consulta
         String[] projection = {
                 ModelosContract.ModelEntry._ID,
                 ModelosContract.ModelEntry.COLUMN_MODEL_NAME,
@@ -94,38 +89,41 @@ public class MisModelosFragment  extends Fragment implements LoaderManager.Loade
                 ModelosContract.ModelEntry.COLUMN_MODEL_SIZE,
         };
 
-        // This loader will execute the ContentProvider's query method on a background thread
+        //dependiendo de el tipo de fragment en el que yo me mueva, hare una consulta u otra
             if(tipo==0) {
+                //para los objetos animados
                 String[] animado = new String[1];
                 animado[0] = "animado";
-                return new CursorLoader(getActivity(),   // Parent activity context
-                        ModelosContract.ModelEntry.CONTENT_URI,         // Query the content URI for the current pet
-                        projection,             // Columns to include in the resulting Cursor
-                        ModelosContract.ModelEntry.COLUMN_MODEL_ANIMATION + "=?",                   // No selection clause
-                        animado,                   // No selection arguments
-                        null);                  // Default sort order
+                return new CursorLoader(getActivity(),
+                        ModelosContract.ModelEntry.CONTENT_URI,
+                        projection,
+                        ModelosContract.ModelEntry.COLUMN_MODEL_ANIMATION + "=?",
+                        animado,
+                        null);
             }
             else if(tipo==1)
             {
+                //para los objetos no animados
                 String[] animado = new String[1];
                 animado[0] = "no animado";
-                return new CursorLoader(getActivity(),   // Parent activity context
-                        ModelosContract.ModelEntry.CONTENT_URI,         // Query the content URI for the current pet
-                        projection,             // Columns to include in the resulting Cursor
-                        ModelosContract.ModelEntry.COLUMN_MODEL_ANIMATION + "=?",                   // No selection clause
-                        animado,                   // No selection arguments
-                        null);                  // Default sort order
+                return new CursorLoader(getActivity(),
+                        ModelosContract.ModelEntry.CONTENT_URI,
+                        projection,
+                        ModelosContract.ModelEntry.COLUMN_MODEL_ANIMATION + "=?",
+                        animado,
+                        null);
             }
             else
                 {
+                    //para los objetos subidos solo por mi
                     String[] downloadID = new String[1];
                     downloadID[0] = "0";
-                    return new CursorLoader(getActivity(),   // Parent activity context
-                            ModelosContract.ModelEntry.CONTENT_URI,         // Query the content URI for the current pet
-                            projection,             // Columns to include in the resulting Cursor
-                            ModelosContract.ModelEntry.COLUMN_MODEL_DOWNLOAD_ID + "=?",                   // No selection clause
-                            downloadID,                   // No selection arguments
-                            null);                  // Default sort order
+                    return new CursorLoader(getActivity(),
+                            ModelosContract.ModelEntry.CONTENT_URI,
+                            projection,
+                            ModelosContract.ModelEntry.COLUMN_MODEL_DOWNLOAD_ID + "=?",
+                            downloadID,
+                            null);
                 }
 
     }
@@ -133,6 +131,7 @@ public class MisModelosFragment  extends Fragment implements LoaderManager.Loade
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
 
+        //Cuando termine la carga de la base de datos, se carga el resultado en la lista de modelos
         mAdapter.swapCursor(data);
 
     }

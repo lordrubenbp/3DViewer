@@ -8,16 +8,15 @@
     android:background="@color/colorBackground">
 
     <LinearLayout
+        android:id="@+id/main_activity_downloadO3D"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_margin="16dp"
         android:layout_weight="1"
-        android:orientation="vertical"
-       android:layout_margin="16dp"
         android:background="@color/white"
         android:elevation="6dp"
-        android:onClick="Onclick"
 
-        >
+        android:orientation="vertical">
 
         <ImageView
 
@@ -38,15 +37,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
 
-                android:layout_weight="1"
-                app:autoSizeMaxTextSize="40sp"
-                app:autoSizeMinTextSize="5sp"
-                app:autoSizeTextType="uniform"
-                android:gravity="center"
                 android:layout_gravity="center"
+                android:layout_weight="1"
+                android:gravity="center"
                 android:text="@string/descargar03D"
                 android:textAlignment="center"
-               />
+                app:autoSizeMaxTextSize="40sp"
+                app:autoSizeMinTextSize="5sp"
+                app:autoSizeTextType="uniform" />
 
         </FrameLayout>
 
@@ -54,14 +52,14 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/main_activity_uploadO3D"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:orientation="vertical"
         android:layout_margin="16dp"
+        android:layout_weight="1"
         android:background="@color/white"
         android:elevation="6dp"
-        >
+        android:orientation="vertical">
 
         <ImageView
 
@@ -82,21 +80,21 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
 
-                android:layout_weight="1"
-                app:autoSizeMaxTextSize="40sp"
-                app:autoSizeMinTextSize="5sp"
-                app:autoSizeTextType="uniform"
-                android:gravity="center"
                 android:layout_gravity="center"
+                android:layout_weight="1"
+                android:gravity="center"
                 android:text="@string/subir03D"
                 android:textAlignment="center"
-                />
+                app:autoSizeMaxTextSize="40sp"
+                app:autoSizeMinTextSize="5sp"
+                app:autoSizeTextType="uniform" />
 
         </FrameLayout>
 
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/main_activity_myO3D"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_margin="16dp"
@@ -124,15 +122,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
 
-                android:layout_weight="1"
-                app:autoSizeMaxTextSize="40sp"
-                app:autoSizeMinTextSize="5sp"
-                app:autoSizeTextType="uniform"
-                android:gravity="center"
                 android:layout_gravity="center"
+                android:layout_weight="1"
+                android:gravity="center"
                 android:text="@string/mis03D"
                 android:textAlignment="center"
-                />
+                app:autoSizeMaxTextSize="40sp"
+                app:autoSizeMinTextSize="5sp"
+                app:autoSizeTextType="uniform" />
 
         </FrameLayout>
 

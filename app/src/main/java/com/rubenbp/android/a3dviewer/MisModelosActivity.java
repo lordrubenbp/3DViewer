@@ -5,6 +5,9 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+/**
+ * Clase de la pantalla de mis modelos 3D
+ */
 public class MisModelosActivity extends AppCompatActivity {
 
     @Override
@@ -12,24 +15,17 @@ public class MisModelosActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mis_modelos);
 
-        // Find the view pager that will allow the user to swipe between fragments
+        //al ser un activity con Fragments y al haber decidido que esos fragment se muestren con tabs, debo referenciar al viewpager de mi interfaz
         ViewPager viewPager = (ViewPager) findViewById(R.id.mis_modelos_viewpager);
 
-
-        // Create an adapter that knows which fragment should be shown on each page
+        //Crea un objeto del adaptador que sepa cual fragment debe ir en cada pagina, se encargara de gestionar los fragment dependiendo de mis acciones
         MisModelosAdapter adapter = new MisModelosAdapter(this, getSupportFragmentManager());
 
-        // Set the adapter onto the view pager
+        //asignar el adaptador a el viewpager
         viewPager.setAdapter(adapter);
 
-        // Find the tab layout that shows the tabs
         TabLayout tabLayout = (TabLayout) findViewById(R.id.mis_modelos_tabs);
 
-        // Connect the tab layout with the view pager. This will
-        //   1. Update the tab layout when the view pager is swiped
-        //   2. Update the view pager when a tab is selected
-        //   3. Set the tab layout's tab names with the view pager's adapter's titles
-        //      by calling onPageTitle()
         tabLayout.setupWithViewPager(viewPager);
     }
 }

@@ -64,11 +64,14 @@ public class SubirModeloActivity extends AppCompatActivity implements
     ImageView imagenImageView;
     String animado="animado";
     String modelPath="";
+    String oldObjectName="";
 
     File modeloFileTempZip =null;
     File modeloFileTempUnzip=null;
     private Button visor3DButton;
     private File modeloAbsolutFileDir;
+    private File modeloAbsolutFileDirOld;
+    private File modeloAbsolutFileDirNew;
 
     private class ModeloFileAsyncTask extends AsyncTask<String, Void, File> {
 
@@ -92,31 +95,8 @@ public class SubirModeloActivity extends AppCompatActivity implements
         protected void onPostExecute(File file) {
 
             modeloFileTempUnzip=file;
+            //aqui una vez terminada la descompresion deberia de habilitar el boton
             visor3DButton.setEnabled(true);
-            //visorRVButton.setEnabled(true);
-            //descargarButton.setEnabled(true);
-        }
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_modelo_upload);
-
-
-        Intent intent = getIntent();
-        mCurrentModelUri = intent.getData();
-        visor3DButton=(Button)findViewById(R.id.upload_button_visor3D);
-        // TODO cuando volteo da un fallo y cierra, debo tener en el layout land, los mismos nombres de id
-        // TODO en el mainActivity, en la vista land hay que activar el onclick
-        imagenImageView=(ImageView)findViewById(R.id.subir_imagen);
-
-        // If the intent DOES NOT contain a pet content URI, then we know that we are
-        // creating a new pet.
-        if (mCurrentModelUri == null) {
-            // This is a new pet, so change the app bar to say "Add a Pet"
-            setTitle(getString(R.string.subir_modelo));
-            visor3DButton.setEnabled(false);
             visor3DButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -127,17 +107,32 @@ public class SubirModeloActivity extends AppCompatActivity implements
                 }
             });
 
-            // Invalidate the options menu, so the "Delete" menu option can be hidden.
-            // (It doesn't make sense to delete a pet that hasn't been created yet.)
+        }
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_modelo_upload);
+
+        Intent intent = getIntent();
+        mCurrentModelUri = intent.getData();
+        visor3DButton=(Button)findViewById(R.id.upload_button_visor3D);
+
+        imagenImageView=(ImageView)findViewById(R.id.subir_imagen);
+
+        if (mCurrentModelUri == null) {
+
+            setTitle(getString(R.string.subir_modelo));
+            visor3DButton.setEnabled(false);
+
             invalidateOptionsMenu();
         } else {
-            // Otherwise this is an existing pet, so change app bar to say "Edit Pet"
+
             setTitle(getString(R.string.editar_modelo));
 
             imagenImageView.setBackgroundColor(getResources().getColor(R.color.green_button));
 
-            // Initialize a loader to read the pet data from the database
-            // and display the current values in the editor
             getLoaderManager().initLoader(EXISTING_MODEL_LOADER, null, this);
         }
         modelPathTextView =(TextView)findViewById(R.id.textView_result);
@@ -146,9 +141,6 @@ public class SubirModeloActivity extends AppCompatActivity implements
         nombreEditText =(EditText)findViewById(R.id.subir_nombre);
         animadoRButton=(RadioButton)findViewById(R.id.radio_animado);
         noanimadoRButton=(RadioButton)findViewById(R.id.radio_noanimado);
-
-        //Cuando pulso accede a el archivo temporal del modelo y se lo manda a el activity
-
 
 
     }
@@ -182,20 +174,10 @@ public class SubirModeloActivity extends AppCompatActivity implements
                 try {
 
                     modeloFileTempZip = new File(getApplicationContext().getCacheDir().getAbsoluteFile(),"modelos_subidos"+ File.separator +"temp.zip" );
-                    //modelPath= modeloFileTempZip.getAbsolutePath();
-
-                    //modeloFileTempZip.deleteOnExit();
-                     //file = new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), "3DViewer" + File.separator + "modelos" + File.separator + "modelos_subidos"+ File.separator +"archivo.zip");
                     inputStream = getContentResolver().openInputStream(uri);
                     FileUtils.copyInputStreamToFile(inputStream, modeloFileTempZip);
                     final ModeloFileAsyncTask modeloFileAsyncTask= new ModeloFileAsyncTask();
                     modeloFileAsyncTask.execute(modeloFileTempZip.getAbsolutePath());
-                   /* if(file.exists())
-                    {
-                        file.delete();
-                    }*/
-                   // FileUtils.moveFile(modeloFileTempZip,file);
-
 
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
@@ -205,9 +187,7 @@ public class SubirModeloActivity extends AppCompatActivity implements
 
                 if(modeloFileTempZip.exists())
                 {
-
                     tamannioTextView.setText(FileUtils.byteCountToDisplaySize(FileUtils.sizeOf(modeloFileTempZip)));
-                    //modelPathTextView.setText(modeloFileTempZip.getAbsolutePath());
 
                 }
 
@@ -218,10 +198,10 @@ public class SubirModeloActivity extends AppCompatActivity implements
 
     public void onRadioButtonClicked(View view) {
 
-        // Is the button now checked?
+
         boolean checked = ((RadioButton) view).isChecked();
 
-        // Check which radio button was clicked
+
         switch(view.getId()) {
             case R.id.radio_animado:
                 if (checked)
@@ -235,8 +215,7 @@ public class SubirModeloActivity extends AppCompatActivity implements
     }
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        // Since the editor shows all pet attributes, define a projection that contains
-        // all columns from the pet table
+
         String[] projection = {
                 ModelEntry._ID,
                 ModelEntry.COLUMN_MODEL_NAME,
@@ -247,60 +226,53 @@ public class SubirModeloActivity extends AppCompatActivity implements
                 ModelEntry.COLUMN_MODEL_SIZE,
         };
 
-        // This loader will execute the ContentProvider's query method on a background thread
-        return new CursorLoader(this,   // Parent activity context
-                mCurrentModelUri,         // Query the content URI for the current pet
-                projection,             // Columns to include in the resulting Cursor
-                null,                   // No selection clause
-                null,                   // No selection arguments
-                null);                  // Default sort order
+        return new CursorLoader(this,
+                mCurrentModelUri,
+                projection,
+                null,
+                null,
+                null);
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-        // Bail early if the cursor is null or there is less than 1 row in the cursor
+
         if (cursor == null || cursor.getCount() < 1) {
             return;
         }
 
-        // Proceed with moving to the first row of the cursor and reading data from it
-        // (This should be the only row in the cursor)
         if (cursor.moveToFirst()) {
-            // Find the columns of pet attributes that we're interested in
+
             int nameColumnIndex = cursor.getColumnIndex( ModelEntry.COLUMN_MODEL_NAME);
             int extensionColumnIndex = cursor.getColumnIndex(ModelEntry.COLUMN_MODEL_EXTENSION);
             int sizeColumnIndex = cursor.getColumnIndex(ModelEntry.COLUMN_MODEL_SIZE);
             int animadoColumnIndex = cursor.getColumnIndex(ModelEntry.COLUMN_MODEL_ANIMATION);
             int modelPathColumnIndex= cursor.getColumnIndex(ModelEntry.COLUMN_MODEL_PATH);
 
-
-            // Extract out the value from the Cursor for the given column index
             String nameModel = cursor.getString(nameColumnIndex);
+            oldObjectName=nameModel;
             String extensionModel = cursor.getString(extensionColumnIndex);
             String sizeModel= cursor.getString(sizeColumnIndex);
             String animadoModel= cursor.getString(animadoColumnIndex);
-            String pathModel= cursor.getString(modelPathColumnIndex);
-
-            // Update the views on the screen with the values from the database
-
+            final String pathModel= cursor.getString(modelPathColumnIndex);
 
             nombreEditText.setText(nameModel);
             tamannioTextView.setText(sizeModel);
             extensionEditText.setText(extensionModel);
-           // modelPathTextView.setText(pathModel);
             modelPath=pathModel;
             modeloAbsolutFileDir= new File(modelPath);
+            Toast.makeText(this,pathModel,Toast.LENGTH_SHORT).show();
             visor3DButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
 
                     Intent intent= new Intent(getApplicationContext(), JPCTActivity.class);
-                    intent.putExtra("hola",modeloAbsolutFileDir);
+                    intent.putExtra("modelpath",modeloAbsolutFileDir);
+                    intent.putExtra("origin","mymodels");
                     startActivity(intent);
                 }
             });
             animado=animadoModel;
-
 
             switch (animado) {
                 case "animado":
@@ -318,91 +290,84 @@ public class SubirModeloActivity extends AppCompatActivity implements
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        // If the loader is invalidated, clear out all the data from the input fields.
+
         nombreEditText.setText("");
         extensionEditText.setText("");
         tamannioTextView.setText("");
-       // modelPathTextView.setText("");
+
         animadoRButton.setChecked(true);
         modelPath="";
     }
+
     private void saveModel() {
-        // Read from input fields
-        // Use trim to eliminate leading or trailing white space
+
         String nameString = nombreEditText.getText().toString().trim();
-
-
-
         String extensionString = extensionEditText.getText().toString().trim();
         String sizeString = tamannioTextView.getText().toString().trim();
         String modelPathString =modelPath;
         String animadoString = animado.trim();
 
-
-
-        // Check if this is supposed to be a new pet
-        // and check if all the fields in the editor are blank
         if (mCurrentModelUri == null &&
                 TextUtils.isEmpty(nameString) && TextUtils.isEmpty(extensionString) &&
                 TextUtils.isEmpty(sizeString) && TextUtils.isEmpty(modelPathString)&& TextUtils.isEmpty(animadoString) ) {
-            // Since no fields were modified, we can return early without creating a new pet.
-            // No need to create ContentValues and no need to do any ContentProvider operations.
+
             return;
         }
 
-        // Create a ContentValues object where column names are the keys,
-        // and pet attributes from the editor are the values.
         ContentValues values = new ContentValues();
 
         values.put(ModelEntry.COLUMN_MODEL_NAME, nameString);
         values.put(ModelEntry.COLUMN_MODEL_EXTENSION, extensionString);
         values.put( ModelEntry.COLUMN_MODEL_ANIMATION, animadoString);
         values.put( ModelEntry.COLUMN_MODEL_PATH, modelPathString);
-        values.put( ModelEntry.COLUMN_MODEL_ANIMATION, animadoString);
         values.put( ModelEntry.COLUMN_MODEL_SIZE, sizeString);
         //son modelos no descargados
         values.put( ModelEntry.COLUMN_MODEL_DOWNLOAD_ID,0);
-        // If the weight is not provided by the user, don't try to parse the string into an
-        // integer value. Use 0 by default.
 
-
-        // Determine if this is a new or existing pet by checking if mCurrentPetUri is null or not
         if (mCurrentModelUri == null) {
             modeloAbsolutFileDir= new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), "3DViewer" + File.separator + "modelos" + File.separator + "subidos"+ File.separator +nameString);
             try {
                 FileUtils.copyDirectory(modeloFileTempUnzip, modeloAbsolutFileDir, true);
                 modelPath=modeloAbsolutFileDir.getAbsolutePath();
+                values.put( ModelEntry.COLUMN_MODEL_PATH, modelPath);
+                Log.v("ABSOLUTE-PATH",modelPath);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            // This is a NEW pet, so insert a new pet into the provider,
-            // returning the content URI for the new pet.
+
             Uri newUri = getContentResolver().insert(ModelEntry.CONTENT_URI, values);
 
-            // Show a toast message depending on whether or not the insertion was successful.
             if (newUri == null) {
-                // If the new content URI is null, then there was an error with insertion.
                 Toast.makeText(this, R.string.error_insercion,
                         Toast.LENGTH_SHORT).show();
             } else {
-                // Otherwise, the insertion was successful and we can display a toast.
                 Toast.makeText(this, R.string.todo_correcto,
                         Toast.LENGTH_SHORT).show();
             }
         } else {
-            // Otherwise this is an EXISTING pet, so update the pet with content URI: mCurrentPetUri
-            // and pass in the new ContentValues. Pass in null for the selection and selection args
-            // because mCurrentPetUri will already identify the correct row in the database that
-            // we want to modify.
+
+            //cuando salve la modificacion de objeto a el cual le he cambiado el nombre, deberia de cambiar la carpeta de nombre de origen por el nuevo nombre
+
+            if(!nameString.equals(oldObjectName))
+            {
+                modeloAbsolutFileDirOld= new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), "3DViewer" + File.separator + "modelos" + File.separator + "subidos"+ File.separator +oldObjectName);
+                modeloAbsolutFileDirNew= new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), "3DViewer" + File.separator + "modelos" + File.separator + "subidos"+ File.separator +nameString);
+                try {
+                    FileUtils.copyDirectory(modeloAbsolutFileDirOld, modeloAbsolutFileDirNew, true);
+                    modelPath=modeloAbsolutFileDirNew.getAbsolutePath();
+                    values.put( ModelEntry.COLUMN_MODEL_PATH, modelPath);
+                   QueryUtils.deleteRecursive(modeloAbsolutFileDirOld);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
             int rowsAffected = getContentResolver().update(mCurrentModelUri, values, null, null);
 
-            // Show a toast message depending on whether or not the update was successful.
             if (rowsAffected == 0) {
-                // If no rows were affected, then there was an error with the update.
                 Toast.makeText(this,R.string.nada_insertado,
                         Toast.LENGTH_SHORT).show();
             } else {
-                // Otherwise, the update was successful and we can display a toast.
                 Toast.makeText(this, R.string.insercion_correcta,
                         Toast.LENGTH_SHORT).show();
             }
@@ -410,20 +375,15 @@ public class SubirModeloActivity extends AppCompatActivity implements
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu options from the res/menu/menu_editor.xml file.
-        // This adds menu items to the app bar.
+
         getMenuInflater().inflate(R.menu.menu_editor, menu);
         return true;
     }
 
-    /**
-     * This method is called after invalidateOptionsMenu(), so that the
-     * menu can be updated (some menu items can be hidden or made visible).
-     */
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
-        // If this is a new pet, hide the "Delete" menu item.
+
         if (mCurrentModelUri == null) {
             MenuItem menuItem = menu.findItem(R.id.action_delete);
             menuItem.setVisible(false);
@@ -433,42 +393,37 @@ public class SubirModeloActivity extends AppCompatActivity implements
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // User clicked on a menu option in the app bar overflow menu
+
         switch (item.getItemId()) {
-            // Respond to a click on the "Save" menu option
+
             case R.id.action_save:
-                // Save pet to database
+
                 saveModel();
-                // Exit activity
+
                 finish();
                 return true;
-            // Respond to a click on the "Delete" menu option
+
             case R.id.action_delete:
-                // Pop up confirmation dialog for deletion
+
                 showDeleteConfirmationDialog();
                 return true;
-            // Respond to a click on the "Up" arrow button in the app bar
+
             case android.R.id.home:
-                // If the pet hasn't changed, continue with navigating up to parent activity
-                // which is the {@link CatalogActivity}.
+
                 if (!mModelHasChanged) {
                     NavUtils.navigateUpFromSameTask(SubirModeloActivity.this);
                     return true;
                 }
 
-                // Otherwise if there are unsaved changes, setup a dialog to warn the user.
-                // Create a click listener to handle the user confirming that
-                // changes should be discarded.
                 DialogInterface.OnClickListener discardButtonClickListener =
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                // User clicked "Discard" button, navigate to parent activity.
+
                                 NavUtils.navigateUpFromSameTask(SubirModeloActivity.this);
                             }
                         };
 
-                // Show a dialog that notifies the user they have unsaved changes
                 showUnsavedChangesDialog(discardButtonClickListener);
                 return true;
         }
@@ -476,75 +431,64 @@ public class SubirModeloActivity extends AppCompatActivity implements
     }
     private void showUnsavedChangesDialog(
             DialogInterface.OnClickListener discardButtonClickListener) {
-        // Create an AlertDialog.Builder and set the message, and click listeners
-        // for the postivie and negative buttons on the dialog.
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(R.string.unsaved_changes_dialog_msg);
         builder.setPositiveButton(R.string.discard, discardButtonClickListener);
         builder.setNegativeButton(R.string.keep_editing, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                // User clicked the "Keep editing" button, so dismiss the dialog
-                // and continue editing the pet.
+
                 if (dialog != null) {
                     dialog.dismiss();
                 }
             }
         });
 
-        // Create and show the AlertDialog
+
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
 
-    /**
-     * Prompt the user to confirm that they want to delete this pet.
-     */
+
     private void showDeleteConfirmationDialog() {
-        // Create an AlertDialog.Builder and set the message, and click listeners
-        // for the postivie and negative buttons on the dialog.
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(R.string.delete_dialog_msg);
         builder.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                // User clicked the "Delete" button, so delete the pet.
+
                 deleteModel();
             }
         });
         builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                // User clicked the "Cancel" button, so dismiss the dialog
-                // and continue editing the pet.
+
                 if (dialog != null) {
                     dialog.dismiss();
                 }
             }
         });
 
-        // Create and show the AlertDialog
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
     private void deleteModel() {
-        // Only perform the delete if this is an existing pet.
+
         if (mCurrentModelUri != null) {
-            // Call the ContentResolver to delete the pet at the given content URI.
-            // Pass in null for the selection and selection args because the mCurrentPetUri
-            // content URI already identifies the pet that we want.
+
             int rowsDeleted = getContentResolver().delete(mCurrentModelUri, null, null);
 
-            // Show a toast message depending on whether or not the delete was successful.
             if (rowsDeleted == 0) {
-                // If no rows were deleted, then there was an error with the delete.
+
                 Toast.makeText(this, getString(R.string.editor_delete_pet_failed),
                         Toast.LENGTH_SHORT).show();
             } else {
-                // Otherwise, the delete was successful and we can display a toast.
+
                 Toast.makeText(this, getString(R.string.editor_delete_pet_successful),
                         Toast.LENGTH_SHORT).show();
             }
         }
 
-        // Close the activity
         finish();
     }
 }

@@ -6,44 +6,33 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
 /**
- * Created by ruben on 21/12/2017.
+ * Clase encargada de gestionar los Fragments de la pantalla de mis objetos 3D
  */
 
 public class MisModelosAdapter extends FragmentPagerAdapter {
 
-    /** Context of the app */
+
     private Context mContext;
 
-    /**
-     * Create a new {@link MisModelosAdapter} object.
-     *
-     * @param context is the context of the app
-     * @param fm is the fragment manager that will keep each fragment's state in the adapter
-     *           across swipes.
-     */
     public MisModelosAdapter(Context context, FragmentManager fm) {
         super(fm);
         mContext = context;
     }
 
-    /**
-     * Return the {@link Fragment} that should be displayed for the given page number.
-     */
     @Override
     public Fragment getItem(int position) {
         if (position == 0) {
 
             MisModelosFragment modelosFragmentAnimados = new MisModelosFragment();
+            //mando a mi objeto fragment la posicion que ocupa para despues en este hacer la consulta a mi base de datos y asi mostrar los modelos correspondientes
             modelosFragmentAnimados.setTipo(0);
 
-            //return new ModelosFragment();
             return modelosFragmentAnimados;
 
         } else if(position==1) {
             MisModelosFragment modelosFragmentNoAnimados = new MisModelosFragment();
             modelosFragmentNoAnimados.setTipo(1);
 
-            //return new NoAnimadosFragment();
             return modelosFragmentNoAnimados;
         }
         else
@@ -51,15 +40,12 @@ public class MisModelosAdapter extends FragmentPagerAdapter {
                 MisModelosFragment modelosFragmentSubidos = new MisModelosFragment();
                 modelosFragmentSubidos.setTipo(2);
 
-                //return new NoAnimadosFragment();
                 return modelosFragmentSubidos;
             }
 
 
     }
-    /**
-     * Return the total number of pages.
-     */
+
     @Override
     public int getCount() {
         return 3;

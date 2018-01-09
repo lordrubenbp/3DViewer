@@ -1,23 +1,28 @@
 package com.rubenbp.android.a3dviewer;
 
 import android.Manifest;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.content.Loader;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
 import android.support.annotation.RequiresApi;
+import android.app.LoaderManager;
+import android.content.ContentValues;
+import android.content.CursorLoader;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.rubenbp.android.a3dviewer.SQLite.ModelosContract;
 import com.rubenbp.android.a3dviewer.jpct.JPCTActivity;
 
 import org.apache.commons.io.FileUtils;
@@ -25,37 +30,96 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 
-public class ModeloDetails extends AppCompatActivity {
+/**
+ * Clase que pertenece a la pantalla de detalle de aquellos que pertenecen a la pantalla de descargar modelo
+ */
+public class ModeloDetails extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
+    //url de la REST API para hacer una consulta por un id concreto
     private String URL="http://192.168.0.104/rest_service/get_data?id=";
 
     //private String URL="http://10.143.155.77/rest_service/get_data?id=";
 
+    //id del modelo en la REST API
     private String idModel="";
+
+    //elementos graficos
     private TextView nombreModeloTextView;
     private TextView extensionModeloTextView;
     private TextView tamannoModeloTextView;
     private Button visor3DButton;
-    private Button visorRVButton;
     private Button descargarButton;
+    //archivo temporal donde se vuelca el archivo de la REST API para ver previsualizado
     private File modeloTempFileDir;
+    //archivo donde se almacena el modelo si se decide descargar
     private File modeloAbsolutFileDir;
-    private boolean descargarButtonState;
 
-    private static final int REQUEST_EXTERNAL_STORAGE = 1;
-    private static String[] PERMISSIONS_STORAGE = {
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
+    private static final int DOWNLOAD_MODEL_LOADER_ = 0;
+
+    //variable de control para saber si el modelo ya ha sido descargado anteriormente
+    private boolean modelDownloaded=false;
+
+    //variables donde se almacenan el resultado de la consulta a la base de datos local
+    private String animationType;
+    private String nombreModelo;
+    private String extensionModelo;
+    private String tamannoModelo;
+
+    //Loader de la base de datos local
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+
+        //creo una consulta con el campo downloadID unicamente para comprobar si ya esta presente
+        String[] projection = {
+                ModelosContract.ModelEntry.COLUMN_MODEL_DOWNLOAD_ID,
+
     };
+        String[] donwloadID=new String[1];
+        donwloadID[0]=idModel;
+        return new CursorLoader(getApplicationContext(),
+                ModelosContract.ModelEntry.CONTENT_URI,
+                projection,
+                ModelosContract.ModelEntry.COLUMN_MODEL_DOWNLOAD_ID + "=?",
+                donwloadID,
+                null);
+    }
 
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+
+        //cuando acabo la consulta si no obtengo ningun resultado es que el modelo no ha sido descargado previamente
+
+        if (cursor == null || cursor.getCount() < 1) {
+
+            modelDownloaded=false;
+
+            Toast.makeText(this,"modelo no descargado antes",Toast.LENGTH_SHORT).show();
+
+            return;
+
+        }else
+            {
+                Toast.makeText(this,"modelo ya descargado ",Toast.LENGTH_SHORT).show();
+                modelDownloaded=true;
+            }
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
+
+
+    }
+
+   // Hilo que hace la peticion a la REST API con el id que tengo
     private class ModeloFileAsyncTask extends AsyncTask<String, Void, File> {
 
         @RequiresApi(api = Build.VERSION_CODES.M)
         @Override
+        //esta funcion me devolvera un objeto file, donde se encuentra el modelo de la REST API, de forma termporal
         protected File doInBackground(String... urls) {
 
-            String result="";
-            // Don't perform the request if there are no URLs, or the first URL is null.
             if (urls.length < 1 || urls[0] == null) {
                 return null;
             }
@@ -68,113 +132,96 @@ public class ModeloDetails extends AppCompatActivity {
         protected void onPostExecute(File file) {
 
             modeloTempFileDir=file;
+            //Una vez tenga el archivo del modelo en una carpeta temporal esta disponible para previsualizar
             visor3DButton.setEnabled(true);
-            visorRVButton.setEnabled(true);
+            //Y para descargar
             descargarButton.setEnabled(true);
         }
     }
 
-    //persmission method.
-    public static void verifyStoragePermissions(Activity activity) {
-        // Check if we have read or write permission
-        int writePermission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        int readPermission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE);
 
-        if (writePermission != PackageManager.PERMISSION_GRANTED || readPermission != PackageManager.PERMISSION_GRANTED) {
-            // We don't have permission so prompt the user
-            ActivityCompat.requestPermissions(
-                    activity,
-                    PERMISSIONS_STORAGE,
-                    REQUEST_EXTERNAL_STORAGE
-            );
-        }
-    }
         @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_modelo_details);
 
 
-            //verifyStoragePermissions(this);
 
             nombreModeloTextView=(TextView)findViewById(R.id.detalle_modelo_nombre);
             extensionModeloTextView=(TextView)findViewById(R.id.detalle_modelo_extension);
             tamannoModeloTextView=(TextView)findViewById(R.id.detalle_modelo_tamaño);
             visor3DButton=(Button)findViewById(R.id.detalle_button_visor3D);
-            visorRVButton=(Button)findViewById(R.id.detalle_button_realidad_virtual);
             descargarButton=(Button)findViewById(R.id.detalle_button_descargar);
 
+            //hasta que no haga la consulta a la REST API estos botones estas inactivos
             visor3DButton.setEnabled(false);
-            visorRVButton.setEnabled(false);
             descargarButton.setEnabled(false);
 
-
+            //capturo el id del elemento de la pantalla Descargar modelo, elegido
             Intent intent = getIntent();
-
             String id= intent.getStringExtra("id");
             idModel=id;
-            String nombreModelo=intent.getStringExtra("nombreEditText");
-            Log.v("NOMBREmODELO",nombreModelo);
-            String extensionModelo=intent.getStringExtra("extensionEditText");
-            String tamannoModelo=intent.getStringExtra("tamanno");
+
+            //Fuerzo el inicio del loader, asi consulto en mi base de datos local
+            getLoaderManager().initLoader(DOWNLOAD_MODEL_LOADER_, null, this);
+
+            nombreModelo=intent.getStringExtra("nombreEditText");
+            extensionModelo=intent.getStringExtra("extensionEditText");
+            tamannoModelo=intent.getStringExtra("tamanno");
+            animationType=intent.getStringExtra("animationType");
+
+            if(animationType.equals("noanimado"))
+            {
+                animationType="no animado";
+            }
 
             nombreModeloTextView.setText(getResources().getString(R.string.nombre_detalle)+" "+nombreModelo);
             extensionModeloTextView.setText(getResources().getString(R.string.extension_detalle)+" "+extensionModelo);
             tamannoModeloTextView.setText(getResources().getString(R.string.tamanno_detalle)+" "+tamannoModelo);
             modeloAbsolutFileDir= new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), "3DViewer" + File.separator + "modelos" + File.separator + idModel);
 
-
             URL=URL+idModel;
             final ModeloFileAsyncTask modeloFileAsyncTask= new ModeloFileAsyncTask();
             modeloFileAsyncTask.execute(URL);
 
-
-            //Cuando pulso accede a el archivo temporal del modelo y se lo manda a el activity
+            //Cuando pulso accede a el archivo temporal del modelo y se lo manda a el activity de JPCT
             visor3DButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
 
                     Intent intent= new Intent(getApplicationContext(), JPCTActivity.class);
-                    intent.putExtra("hola",modeloTempFileDir);
+                    intent.putExtra("modelpath",modeloTempFileDir);
+                    intent.putExtra("origin","download");
                     startActivity(intent);
                 }
             });
-            //Cuando pulso muevo el archivo temporal a la ubicacion fija
-            // TODO Debo hacer que sepa que cuando se descarga, cambie el boton a borrar y el path de los modelos pase a el absoluto
-            descargarButtonState=false;
+
             descargarButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
 
-                    //descarga
-                    if(!descargarButtonState) {
-                        try {
-                            FileUtils.copyDirectory(modeloTempFileDir, modeloAbsolutFileDir, true);
-                            modeloTempFileDir.deleteOnExit();
-                            Toast.makeText(getApplicationContext(), "MODELO DESCARGADO ", Toast.LENGTH_SHORT).show();
-                            descargarButton.setBackgroundColor(getResources().getColor(R.color.red_button));
-                            descargarButton.setText(getResources().getString(R.string.borrar_button));
-                            descargarButtonState=true;
+                    //String[] id = {idModel};
+                    //getContentResolver().delete(ModelosContract.ModelEntry.CONTENT_URI,ModelosContract.ModelEntry.COLUMN_MODEL_DOWNLOAD_ID+"=?", id);
 
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        //borra
+                   if(modelDownloaded)
+                    {
+                        Toast.makeText(getApplicationContext(),"Modelo ya descargado",Toast.LENGTH_SHORT).show();
+
                     }else
                         {
+
+                            modelDownloaded=true;
+
                             try {
-                                //antes de poder borrar un directorio debo borrar su contenido
-                                // TODO tengo un bug que no me deja borrar una carpeta cuando hay otra dentro
-                                FileUtils.cleanDirectory(modeloAbsolutFileDir);
-                                modeloAbsolutFileDir.delete();
+                                FileUtils.copyDirectory(modeloTempFileDir, modeloAbsolutFileDir, true);
+                                QueryUtils.deleteRecursive(modeloTempFileDir);
+                                saveDownloadModelToDB();
+
+
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
-                            //modeloAbsolutFileDir.delete();
-                            Toast.makeText(getApplicationContext(), "MODELO BORRADO ", Toast.LENGTH_SHORT).show();
-                            descargarButton.setBackgroundColor(getResources().getColor(R.color.green_button));
-                            descargarButton.setText(getResources().getString(R.string.descargar_button));
-                            descargarButtonState=false;
+
 
                         }
 
@@ -182,26 +229,30 @@ public class ModeloDetails extends AppCompatActivity {
                 }
             });
 
+    }
 
+    private void saveDownloadModelToDB()
+    { ContentValues values = new ContentValues();
 
+        values.put(ModelosContract.ModelEntry.COLUMN_MODEL_NAME,nombreModelo);
+        values.put(ModelosContract.ModelEntry.COLUMN_MODEL_EXTENSION, extensionModelo);
+        values.put( ModelosContract.ModelEntry.COLUMN_MODEL_DOWNLOAD_ID,idModel );
+        values.put( ModelosContract.ModelEntry.COLUMN_MODEL_PATH, modeloAbsolutFileDir.getAbsolutePath());
+        values.put( ModelosContract.ModelEntry.COLUMN_MODEL_ANIMATION, animationType);
+        values.put( ModelosContract.ModelEntry.COLUMN_MODEL_SIZE,tamannoModelo);
 
+        Uri newUri = getContentResolver().insert(ModelosContract.ModelEntry.CONTENT_URI, values);
 
+        if (newUri == null) {
+
+            Toast.makeText(this, R.string.error_insercion,
+                    Toast.LENGTH_SHORT).show();
+        } else {
+
+            Toast.makeText(this, R.string.todo_correcto,
+                    Toast.LENGTH_SHORT).show();
+        }
 
     }
-    /*public void OnClickDownloadButton(View view)
-    {
 
-        File outputFolder= new File(Environment.getExternalStorageDirectory().getAbsoluteFile(),"3DViewer"+File.separator+"modelos"+File.separator+idModel);
-
-        try {
-            //FileUtils.moveDirectory(modeloTempFileDir,outputFolder);
-            FileUtils.copyDirectory(modeloTempFileDir,outputFolder,true);
-            Toast.makeText(this,"MODELO DESCARGADO ",Toast.LENGTH_SHORT).show();
-            modeloTempFileDir.deleteOnExit();
-            Intent intent= new Intent(this, JPCTActivity.class);
-            startActivity(intent);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }*/
 }

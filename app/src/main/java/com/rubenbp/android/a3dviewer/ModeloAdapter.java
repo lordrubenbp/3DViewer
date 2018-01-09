@@ -17,7 +17,7 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Created by ruben on 22/11/2017.
+ * Clase que sirve para adaptar los datos resultantes de una consulta a la REST API, a los elementos graficos de la interfaz
  */
 
  public class ModeloAdapter extends ArrayAdapter<Modelo> {
@@ -38,7 +38,6 @@ import java.util.List;
         }
 
         Modelo currentModelo = getItem(position);
-
 
         TextView modeloName=(TextView)listItemView.findViewById(R.id.modelo_nombre);
         modeloName.setText(currentModelo.getNombre());

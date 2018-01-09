@@ -45,14 +45,29 @@
                 android:value=".ModelosActivity" />
         </activity>
         <activity android:name=".jpct.JPCTActivity" />
-        <activity android:name=".SubirModeloActivity" />
+        <activity
+            android:name=".SubirModeloActivity"
+            android:parentActivityName=".MainActivity">
+
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".SubirModeloActivity" />
+        </activity>
 
         <provider
             android:name=".SQLite.ModelosProvider"
             android:authorities="com.rubenbp.android.a3dviewer"
             android:exported="false" />
 
-        <activity android:name=".MisModelosActivity"></activity>
+        <activity
+            android:name=".MisModelosActivity"
+            android:parentActivityName=".MainActivity">
+
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MisModelosActivity" />
+
+        </activity>
     </application>
 
 </manifest>

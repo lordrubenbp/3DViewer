@@ -25,7 +25,11 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -70,10 +74,8 @@ public class QueryUtils {
                 outputFolder.mkdir();
             }
 
-            //get the zip file content
             ZipInputStream zis =
                     new ZipInputStream(new FileInputStream(zipFile));
-            //get the zipped file list entry
             ZipEntry ze = zis.getNextEntry();
 
             while(ze!=null){
@@ -81,10 +83,7 @@ public class QueryUtils {
                 String fileName = ze.getName();
                 File newFile = new File(outputFolder + File.separator + fileName);
 
-                //System.out.println("file unzip : "+ newFile.getAbsoluteFile());
 
-                //create all non exists folders
-                //else you will hit FileNotFoundException for compressed folder
                 new File(newFile.getParent()).mkdirs();
 
                 FileOutputStream fos = new FileOutputStream(newFile);
@@ -102,8 +101,6 @@ public class QueryUtils {
             zis.close();
             zipFile.delete();
 
-            //System.out.println("Done");
-
         }catch(IOException ex){
             ex.printStackTrace();
         }
@@ -115,7 +112,6 @@ public class QueryUtils {
     public static File fetchModeloFile(String requestUrl, int id, Context applicationContext)
     {
         context=applicationContext;
-        // Create URL object
         URL url = createUrl(requestUrl);
 
        File file=null;
@@ -134,10 +130,8 @@ public class QueryUtils {
     }
 
     public static List<Modelo> fetchModeloData(String requestUrl) {
-        // Create URL object
         URL url = createUrl(requestUrl);
 
-        // Perform HTTP request to the URL and receive a JSON response back
         String jsonResponse = null;
         try {
             jsonResponse = makeHttpRequest(url);
@@ -146,44 +140,36 @@ public class QueryUtils {
             Log.e(LOG_TAG, "Problem making the HTTP request.", e);
         }
 
-        // Extract relevant fields from the JSON response and create a list of {@link Earthquake}s
         List<Modelo> modelos = extractFeatureFromJson(jsonResponse);
 
-        // Return the list of {@link Earthquake}s
         return modelos;
     }
     private static List<Modelo> extractFeatureFromJson(String modeloJSON) {
-        // If the JSON string is empty or null, then return early.
         if (TextUtils.isEmpty(modeloJSON)) {
             return null;
         }
-
-        // Create an empty ArrayList that we can start adding earthquakes to
         List<Modelo> modelos = new ArrayList<>();
 
-        // Try to parse the JSON response string. If there's a problem with the way the JSON
-        // is formatted, a JSONException exception object will be thrown.
-        // Catch the exception so the app doesn't crash, and print the error message to the logs.
         try {
 
 
             JSONArray modelosArray = new JSONArray(modeloJSON);
 
-            // For each earthquake in the earthquakeArray, create an {@link Earthquake} object
+
             for (int i = 0; i < modelosArray.length(); i++) {
 
-                // Get a single earthquake at position i within the list of earthquakes
+
                 JSONObject currentModelo = modelosArray.getJSONObject(i);
 
                 int id= currentModelo.getInt("id");
 
-                String nombre=currentModelo.getString("nombreEditText");
+                String nombre=currentModelo.getString("nombre");
 
                 String tipo=currentModelo.getString("tipo");
 
                 String tamanno=currentModelo.getString("tamaño");
 
-                String extension=currentModelo.getString("extensionEditText");
+                String extension=currentModelo.getString("extension");
 
                 Modelo modelo= new Modelo(id,nombre,tipo,tamanno,extension);
 
@@ -192,9 +178,7 @@ public class QueryUtils {
             }
 
         } catch (JSONException e) {
-            // If an error is thrown when executing any of the above statements in the "try" block,
-            // catch the exception here, so the app doesn't crash. Print a log message
-            // with the message from the exception.
+
             Log.e("QueryUtils", "Problem parsing the earthquake JSON results", e);
         }
 
@@ -214,21 +198,13 @@ public class QueryUtils {
         return output.toString();
     }
 
-    /**
-     * Make an HTTP request to the given URL and return a String as the response.
-     */
+
     @RequiresApi(api = Build.VERSION_CODES.M)
     private static File makeHttpRequestForFile(URL url, int id) throws IOException {
 
         String idString=id+".zip";
 
-        //File file= new File(Environment.getExternalStorageDirectory()+idString);
-
-        //File file = new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), idString);
-
         File file = new File(context.getCacheDir().getAbsoluteFile(), idString);
-
-
 
         Log.v("FILE",file.getAbsolutePath());
 
@@ -237,11 +213,9 @@ public class QueryUtils {
             Log.v("FILE","EXISTE");
         }
         else
-            //file.createNewFile();
+
             Log.v("FILE",file.getAbsolutePath());
 
-
-        // If the URL is null, then return early.
         if (url == null) {
             return file;
         }
@@ -255,8 +229,6 @@ public class QueryUtils {
             urlConnection.setRequestMethod("GET");
             urlConnection.connect();
 
-            // If the request was successful (response code 200),
-            // then read the input stream and parse the response.
             if (urlConnection.getResponseCode() == 200) {
                 inputStream = urlConnection.getInputStream();
                 FileUtils.copyInputStreamToFile(inputStream, file);
@@ -274,9 +246,7 @@ public class QueryUtils {
                 urlConnection.disconnect();
             }
             if (inputStream != null) {
-                // Closing the input stream could throw an IOException, which is why
-                // the makeHttpRequest(URL url) method signature specifies than an IOException
-                // could be thrown.
+
                 inputStream.close();
             }
         }
@@ -285,7 +255,6 @@ public class QueryUtils {
     private static String makeHttpRequest(URL url) throws IOException {
         String jsonResponse = "";
 
-        // If the URL is null, then return early.
         if (url == null) {
             return jsonResponse;
         }
@@ -299,8 +268,6 @@ public class QueryUtils {
             urlConnection.setRequestMethod("GET");
             urlConnection.connect();
 
-            // If the request was successful (response code 200),
-            // then read the input stream and parse the response.
             if (urlConnection.getResponseCode() == 200) {
                 inputStream = urlConnection.getInputStream();
                 jsonResponse = readFromStream(inputStream);
@@ -315,9 +282,7 @@ public class QueryUtils {
                 urlConnection.disconnect();
             }
             if (inputStream != null) {
-                // Closing the input stream could throw an IOException, which is why
-                // the makeHttpRequest(URL url) method signature specifies than an IOException
-                // could be thrown.
+
                 inputStream.close();
             }
         }
@@ -336,5 +301,33 @@ public class QueryUtils {
         return url;
     }
 
+   public static void deleteRecursive(File dir)
+    {
+        Log.d("DeleteRecursive", "DELETEPREVIOUS TOP" + dir.getPath());
+        if (dir.isDirectory())
+        {
+            String[] children = dir.list();
+            for (int i = 0; i < children.length; i++)
+            {
+                File temp = new File(dir, children[i]);
+                if (temp.isDirectory())
+                {
+                    Log.d("DeleteRecursive", "Recursive Call" + temp.getPath());
+                    deleteRecursive(temp);
+                }
+                else
+                {
+                    Log.d("DeleteRecursive", "Delete File" + temp.getPath());
+                    boolean b = temp.delete();
+                    if (b == false)
+                    {
+                        Log.d("DeleteRecursive", "DELETE FAIL");
+                    }
+                }
+            }
+
+        }
+        dir.delete();
+    }
 
 }

@@ -9,6 +9,7 @@
     >
 
     <LinearLayout
+        android:id="@+id/main_activity_downloadO3D"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1"
@@ -19,7 +20,7 @@
         android:layout_marginBottom="8dp"
         android:background="@color/white"
         android:elevation="6dp"
-        android:onClick="Onclick"
+
 
         >
 
@@ -46,7 +47,6 @@
                 android:gravity="center"
                 android:text="@string/descargar03D"
                 android:textAlignment="center"
-
                 app:autoSizeMaxTextSize="20sp"
                 app:autoSizeMinTextSize="5sp"
                 app:autoSizeTextType="uniform" />
@@ -64,6 +64,7 @@
         android:baselineAligned="false">
 
         <LinearLayout
+            android:id="@+id/main_activity_uploadO3D"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -74,7 +75,7 @@
             android:layout_marginRight="8dp"
             android:background="@color/white"
             android:elevation="6dp"
-            android:onClick="OnclickUpload"
+
             >
 
             <ImageView
@@ -109,6 +110,7 @@
 
         </LinearLayout>
         <LinearLayout
+            android:id="@+id/main_activity_myO3D"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -117,7 +119,6 @@
             android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp"
             android:layout_marginRight="16dp"
-            android:onClick="OnclickMisModelos"
             android:background="@color/white"
             android:elevation="6dp"
             >

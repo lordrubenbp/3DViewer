@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import com.rubenbp.android.a3dviewer.ModelosActivity;
 import com.rubenbp.android.a3dviewer.R;
 import com.threed.jpct.Animation;
 import com.threed.jpct.Camera;
@@ -27,6 +28,7 @@ import com.threed.jpct.TextureManager;
 import com.threed.jpct.World;
 import com.threed.jpct.util.BitmapHelper;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.opengl.GLSurfaceView;
@@ -1010,7 +1012,14 @@ public class JPCT3DObject implements GLSurfaceView.Renderer, View.OnTouchListene
 
 				return false;
 			} else if (CONTROLLER_BUTTONS[5].contains((int) event.getX(), (int) event.getY())) {
-				mActivity.finish();
+				if(mActivity.origin.equals("download")) {
+					Intent intent = new Intent(mActivity.getApplicationContext(), ModelosActivity.class);
+					mActivity.startActivity(intent);
+				}else
+					{
+						mActivity.finish();
+					}
+
 
 				return false;
 			}

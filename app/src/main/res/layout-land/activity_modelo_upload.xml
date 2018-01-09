@@ -7,100 +7,108 @@
     android:background="@color/colorBackground"
     android:orientation="horizontal"
     android:padding="16dp"
-    tools:context="com.rubenbp.android.a3dviewer.ModeloDetails">
+    tools:context="com.rubenbp.android.a3dviewer.SubirModeloActivity">
 
     <ImageView
+        android:id="@+id/subir_imagen"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="3"
-        android:background="@color/orange"
+        android:background="@android:color/darker_gray"
         android:scaleType="fitCenter"
         android:src="@drawable/objeto3d" />
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="3"
+        android:layout_weight="4"
         android:background="@color/white"
         android:orientation="vertical"
-       android:paddingBottom="100dp"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:paddingTop="20dp">
+        android:padding="15dp">
 
-        <android.support.v7.widget.AppCompatTextView
-            android:id="@+id/detalle_modelo_nombre"
+        <EditText
+            android:id="@+id/subir_nombre"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:gravity="clip_vertical"
-            android:text="Nombre: silla_salon"
-            app:autoSizeMaxTextSize="20sp"
-            app:autoSizeMinTextSize="5sp"
-            app:autoSizeTextType="uniform"
+            android:gravity="center_vertical"
+            android:hint="@string/nombre_detalle"
 
             />
 
-        <android.support.v7.widget.AppCompatTextView
-            android:id="@+id/detalle_modelo_extension"
+        <EditText
+            android:id="@+id/subir_extension"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            app:autoSizeMaxTextSize="20sp"
-            app:autoSizeMinTextSize="5sp"
-            app:autoSizeTextType="uniform"
-            android:gravity="clip_vertical"
-            android:text="Extension: .obj"
-           />
+            android:gravity="center_vertical"
+           android:hint="@string/extension_detalle" />
 
         <android.support.v7.widget.AppCompatTextView
-            android:id="@+id/detalle_modelo_tamaño"
+            android:id="@+id/subir_tamanno"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:gravity="clip_vertical"
-            android:text="Tamaño: 40MB"
+            android:gravity="center_vertical"
+            android:text="@string/tamanno_detalle"
             app:autoSizeMaxTextSize="20sp"
             app:autoSizeMinTextSize="5sp"
-            app:autoSizeTextType="uniform"
-            />
+            app:autoSizeTextType="uniform" />
+
+        <RadioGroup
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/radio_animado"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:onClick="onRadioButtonClicked"
+                android:text="Animado" />
+
+            <RadioButton
+                android:id="@+id/radio_noanimado"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onRadioButtonClicked"
+                android:text="No animado" />
+        </RadioGroup>
 
     </LinearLayout>
-
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="3"
         android:orientation="vertical"
-        android:padding="16dp"
-      >
-
+        android:padding="16dp">
         <Button
-            android:id="@+id/detalle_button_visor3D"
+            android:id="@+id/upload_button_visor3D"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+
             android:layout_weight="1"
-            android:background="@color/grey_blue_button"
-            android:elevation="0dp"
+            android:onClick="onClickUploadFile"
             android:text="@string/visor3d_button"
-            android:textAlignment="center"
-            android:textSize="15sp"
-            tools:background="@color/grey_blue_button" />
-
-
+            tools:background="@color/grey_blue_button"
+            android:textSize="15sp" />
 
         <Button
-            android:id="@+id/detalle_button_descargar"
+            android:id="@+id/upload_button_archivo"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-
             android:layout_marginTop="30dp"
             android:layout_weight="1"
             android:background="@color/green_button"
-            android:text="@string/descargar_button"
+            android:onClick="onClickUploadFile"
+            android:text="@string/subir_archivo"
             android:textColor="@color/white"
             android:textSize="20sp" />
+
     </LinearLayout>
+
 
 
 

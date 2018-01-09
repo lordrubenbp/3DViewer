@@ -30,6 +30,7 @@ public class JPCTActivity extends Activity {
 	private JPCT3DObject renderer;
 
     public File direccion;
+    public String origin;
 	private String materialObject3D;
 	private String nameObject3D;
 	private boolean animationActivated;
@@ -44,7 +45,8 @@ protected void onCreate(Bundle savedInstanceState) {
 		
 		Bundle extras = getIntent().getExtras();
 
-		 direccion= (File) extras.getSerializable("hola");
+		 direccion= (File) extras.getSerializable("modelpath");
+		 origin=extras.getString("origin");
 		//Log.v("DIRECCIONNNN",direccion.getAbsolutePath());
 
 		glView = new GLSurfaceView(this);
